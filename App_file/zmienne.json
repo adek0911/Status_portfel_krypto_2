@@ -1,0 +1,20 @@
+{
+    "connect_file":[
+        {
+            "path_portfel": "ściezka do portela1",
+            "path_file2": "ściezka do portela2",
+            "path_file3": "ściezka do portela3"
+
+        }
+    ],
+    "Sciezka_portfel": "Dane\\Portfel_1.txt",
+    "Sciezka_Szczegoly_zakupow":"Dane\\Szczegoly_zakupow_org.txt",
+    "URL_krypto_price":"https://api.binance.com/api/v3/ticker/price?symbol=",
+    "URL_wykres_data":"https://www.cryptodatadownload.com/cdd/Binance_{i}_1h.csv",
+    "Sciezka_Dane_wykres":"App_file\\Dane_wykresy.csv"
+
+
+
+
+}
+

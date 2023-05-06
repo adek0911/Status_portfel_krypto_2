@@ -1,0 +1,64 @@
+Duże okno (może rozwijane)
+Górny wiersz scalony zawiera informacje o dacie z kiedy pobrał dane
+3 kolumny
+    Wykresy
+    Portfel
+    Wyniki
+
+Przyciski funkcyjne (Na razie w planach jak mod. Portfel)
+
+Loopring 90.8754206 1000
+ARI10 34095.882 zainw: 10500
+Wyniki
+    Aktualna cena zł
+    Aktualna cena $
+    Aktualna wartość zł(cena)
+    Aktualna wartość $(cena)
+    Zysk strata zł (Kolory zależne od wartości) ilosc * cena
+    Zysk strata $ (Kolory zależne od wartości)
+    Zysk strata % (Kolory zależne od wartości)
+
+Ogólny zysk/Strata zł
+Ogólny zysk/Strata $
+Ogólny zysk/Strata %
+Wartość zaiwestowana
+
+/test
+BCH,1000,,14
+BNB,,100,0.3
+
+
+Jeżeli cena wychodzi na minus to bez ceny jednostkowej ?
+BTC brakuje ? # zrobione
+
+threading zrobić na wprawadzanie danych do ekranu głownego
+
+Filtry w szczegółach zakupów //zrobione
+data roczny filtr //zrobione
+Krypto //zrobione
+k/s //zrobione
+?zmiana koloru jeżeli wartość jest poniżej zera ??zielona powyżej ? //zrobione
+Przycisk pod bota 
+?? Portfel będzie pobierał wartości z szczegółów zakupu //done
+okno dodawania wierszy usuwania i edytowania w szczegółach
+KONIEC ?
+
+wybierz zamień usuń dodaj
+
+Usun # działa już na plikach
+Dodaj # działa już na plikach
+Zamien # work in progress
+Aktualizacja portfela /usunąć elementy w
+portfelu które nie znadjują się w szczegółach zakupów
+Okienko jeżeli data jest różna by wpisać aktualną cenę ARi lub innej waluty której nie znalazł 
+
+Note_23.10.2022
+Stworzyć opcje działania programu bez dostępu do internetu/ podczas braku odpowiedzi z serwera
+Stworzyć okno gdy nie będzie mógł pobrać wartości dolara
+Zapisywać ostatnią wartość krypto w pliku by mógł odczytać przy braku internetu
+Podczas odpalania bez internetu wyłączyć ładowanie wykrsów / Załadować zapisane
+
+Odczyt z pliku że np. w 3 linii jest nazwa portfela skąd ma brać dane 
+
+
+
