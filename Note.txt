@@ -54,11 +54,37 @@ Okienko jeżeli data jest różna by wpisać aktualną cenę ARi lub innej walut
 
 Note_23.10.2022
 Stworzyć opcje działania programu bez dostępu do internetu/ podczas braku odpowiedzi z serwera
-Stworzyć okno gdy nie będzie mógł pobrać wartości dolara
+Stworzyć okno gdy nie będzie mógł pobrać wartości dolara //pobiera wartość z json
 Zapisywać ostatnią wartość krypto w pliku by mógł odczytać przy braku internetu
 Podczas odpalania bez internetu wyłączyć ładowanie wykrsów / Załadować zapisane
 
 Odczyt z pliku że np. w 3 linii jest nazwa portfela skąd ma brać dane 
 
+BCH no
+BTC good
+XRP good
+ADA good
+LTC good
+DOGE good
+LRC good
+
+15.12.2022,ETH,Kupno,5500,1500,1
+
+NAPISAĆ FUKCJE DO PRZYCISKÓW ZMIANY Szczegoly_zakupow   DONE
+
+Okno do wpisania wartości dla krypto których nie ma w bazie 
+Wielowątkowość wczytywania cen krypto 
 
 
+Zamiast wykresów z ostatniego tygodnia zrobić dane z średniej ostatniego dnia, 3 dni, tygodnia 
+2 tyg, miesiąc // do 7 danych aktualnie 5
+
+Zrobić przycisk analiza:
+    Wyświetlanie aktualnego portfela wraz z wartością oraz 
+    możliwość zastanowienia się jak wyglądały by stan podczas
+    inwestycji o określoną kwotę i jak zmieni się stan 
+
+Dodać kolumne w tabeli wartości "cena podczas zakupu"
+
+do symboli w url z zmiennych
+["BTCUSDT","BNBUSDT"]

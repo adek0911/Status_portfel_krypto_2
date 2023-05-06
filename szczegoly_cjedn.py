@@ -50,13 +50,13 @@ def szczegoly_zakupow():
     szczegoly_zakupow_filtr_k_s.append('Wszystko')
     
 
-    def search(list,object):
+    def search(list:list,object):
         for i in range(len(list)):
             if list[i]==object:
                 return TRUE
         return FALSE
 
-    def clear_treeview(treeview):
+    def clear_treeview(treeview:ttk.Treeview):
         for i in treeview.get_children():
             treeview.delete(i)
 
@@ -65,13 +65,12 @@ def szczegoly_zakupow():
 
     def dane_szczegoly_zakupow_treeview(): #Zwykłe pobranie z pliku z uzupełnienem date
         odczyt=open(str(zmienne_file['Sciezka_Szczegoly_zakupow']),'r')
-        next(odczyt)
 
         i=0
         for a in odczyt:
             a=a.splitlines()
             szczegoly_zakupow_dane.append(a)
-            szczegoly_zakupow_dane[i]=szczegoly_zakupow_dane[i][0].split(',')
+            szczegoly_zakupow_dane[i]=str(szczegoly_zakupow_dane[i][0]).split(',')
             szczegoly_zakupow_treeview.insert('','end',values=szczegoly_zakupow_dane[i])
             data=datetime.strptime((szczegoly_zakupow_dane[i][0])[6:],'%Y').strftime('%Y')
             if i==0:
@@ -93,9 +92,9 @@ def szczegoly_zakupow():
 
     #endregion
 
-    #region szczegoly_treeview_cjednostkowa
+    #szczegoly_treeview_cjednostkowa
 
-    #region tabela
+    #region tabela ceny jednostkowej
 
     szczegoly_treeview_cjednostkowa=ttk.Treeview(szczegoly_zakupow_window,style='primary.Treeview',show='headings',selectmode='browse')
     szczegoly_treeview_cjednostkowa['columns']=("Krypto","Cena jend. zł","Cena jend. $","Ilosc")
@@ -115,7 +114,8 @@ def szczegoly_zakupow():
 
     #endregion
 
-    #region dane
+    #region dane ceny jendostkowej
+
     global szczegoly_treeview_cjednostkowa_dane
     szczegoly_treeview_cjednostkowa_dane=[]
 
@@ -135,9 +135,9 @@ def szczegoly_zakupow():
             for j in szczegoly_zakupow_dane:
                 if j[1]==krypto:
                     tab1.append(j)
-            cena_z=0
-            cena_d=0
-            ilosc=0
+            cena_z=0    #cena złotówki wspólna dla każdej krypto
+            cena_d=0    #cena dolar wspólna dla każdej krypto
+            ilosc=0     #ilość wspólna dla każdej krypto
             for j in range(len(tab1)):
                 if tab1[j][2]=='Kupno':
                     cena_z+=float(tab1[j][3])
@@ -150,27 +150,36 @@ def szczegoly_zakupow():
                     ilosc=(ilosc-float(tab1[j][5])).__round__(8)
 
             if ilosc!=0:
-                cena_jedn_zl=(cena_z/ilosc).__round__(2)
-                cena_jedn_d=(cena_d/ilosc).__round__(2)
-
+                if cena_z<0:
+                    cena_jedn_zl=0
+                    cena_jedn_d=0
+                else: 
+                    cena_jedn_zl=(cena_z/ilosc).__round__(2)
+                    cena_jedn_d=(cena_d/ilosc).__round__(2)
+                cena_z=cena_z.__round__(2)
+                cena_d=cena_d.__round__(2)
                 szczegoly_treeview_cjednostkowa_dane.append([krypto,cena_jedn_zl,cena_jedn_d,ilosc,cena_z,cena_d])
 
         clear_treeview(szczegoly_treeview_cjednostkowa)
 
         for row in szczegoly_treeview_cjednostkowa_dane:
-            if row[3]!=0:
+            # wycięcie rekordów gdzie nie zostały sprzedane wszystkie krypto 
+            if row[3]!=0: 
                 szczegoly_treeview_cjednostkowa.insert('','end',values=row[:4])
+
         
 
     tab_cjednostkowa_dane()
     
+    
+
     #endregion
 
     def update_portfel(): 
 
     #region Porównanie wartości w portfelu
 
-        with open('Dane\Portfel_1.txt','r') as odczyt:
+        with open(str(zmienne_file['Sciezka_portfel']),'r') as odczyt:
             dane_portfel=odczyt.read()
 
         dane_portfel=dane_portfel.splitlines()
@@ -188,19 +197,21 @@ def szczegoly_zakupow():
 
         delete_date=[]
 
+        #wyszukanie krypto z portfela których nie ma w cenach jednostkowych
         for j in range(len(dane_portfel)):
             if search2(szczegoly_treeview_cjednostkowa_dane,0,dane_portfel[j][0])==False:
                 delete_date.append(dane_portfel[j])
-    
+
+        #Usunięcie wierszy nie będących w cenach jednostkowych
         for i in delete_date:
             dane_portfel.remove(i)
-
+      
         for i in range(len(szczegoly_treeview_cjednostkowa_dane)):
             
             for j in range(len(dane_portfel)):
 
                 if search2(dane_portfel,0,szczegoly_treeview_cjednostkowa_dane[i][0])==False and szczegoly_treeview_cjednostkowa_dane[i][3]>0:
-                    append_date=[str(szczegoly_treeview_cjednostkowa_dane[i][0]),str(szczegoly_treeview_cjednostkowa_dane[i][1]),str(szczegoly_treeview_cjednostkowa_dane[i][2]),str(szczegoly_zakupow_dane[i][3])]
+                    append_date=[str(szczegoly_treeview_cjednostkowa_dane[i][0]),str(szczegoly_treeview_cjednostkowa_dane[i][4]),str(szczegoly_treeview_cjednostkowa_dane[i][5]),str(szczegoly_treeview_cjednostkowa_dane[i][3])]
                     dane_portfel.append(append_date)
 
                 if dane_portfel[j][0]==szczegoly_treeview_cjednostkowa_dane[i][0] and dane_portfel[j][3]!=szczegoly_treeview_cjednostkowa_dane[i][3]:
@@ -209,7 +220,7 @@ def szczegoly_zakupow():
                     dane_portfel[j][2]=str((szczegoly_treeview_cjednostkowa_dane[i][5]).__round__(2)) #dolar
                     dane_portfel[j][3]=str(szczegoly_treeview_cjednostkowa_dane[i][3]) #ilosc
 
-        with open('Dane\Portfel_1.txt','w') as zapis:
+        with open(str(zmienne_file['Sciezka_portfel']),'w') as zapis:
 
             for i in range(len(dane_portfel)):
                 a=','.join(dane_portfel[i])
@@ -449,7 +460,7 @@ def szczegoly_zakupow():
             szczegoly_zakupow_combobox_krypto['values']=szczegoly_zakupow_filtr_krypto
             szczegoly_zakupow_combobox_b_s['values']=szczegoly_zakupow_filtr_k_s
 
-    #region edit_method
+    # edit_method
 
     def clear_entry():
         szczegoly_zakupow_entry_data.delete(0,END)
@@ -489,7 +500,7 @@ def szczegoly_zakupow():
         #dodawnie do pliku
         s_add_date=','.join(add_date)
 
-        with open('Dane/Szczegoly_zakupow.txt','a') as sz_z:
+        with open(str(zmienne_file['Sciezka_Szczegoly_zakupow']),'a') as sz_z:
             sz_z.write('\n')
             sz_z.write(s_add_date)
 
@@ -508,7 +519,7 @@ def szczegoly_zakupow():
                 con_line_1.append(v)
             con_line.append(con_line_1)
 
-        with open('Dane/Szczegoly_zakupow.txt','w') as usun:
+        with open(str(zmienne_file['Sciezka_Szczegoly_zakupow']),'w') as usun:
             for i in range(len(con_line)):
                 a=','.join(con_line[i])
                 usun.write(a)
@@ -527,6 +538,21 @@ def szczegoly_zakupow():
         add_date.insert(5,szczegoly_zakupow_entry_ilosc.get())
 
         szczegoly_zakupow_treeview.item(szczegoly_zakupow_treeview.selection(),values=add_date)
+        
+        con_line=[]
+        for line in range(len(szczegoly_zakupow_treeview.get_children())):
+            con_line_1=[]
+            for value in szczegoly_zakupow_treeview.item(szczegoly_zakupow_treeview.get_children()[line])['values']:
+                v=str(value)
+                con_line_1.append(v)
+            con_line.append(con_line_1)
+
+        with open(str(zmienne_file['Sciezka_Szczegoly_zakupow']),'w') as zmien:
+            for i in range(len(con_line)):
+                a=','.join(con_line[i])
+                zmien.write(a)
+                if i <len(con_line)-1: #ostatnia linia bez nowej linii
+                    zmien.write('\n')
         clear_entry()
 
 
