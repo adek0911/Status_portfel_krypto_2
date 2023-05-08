@@ -1,24 +1,18 @@
 from datetime import datetime
 import json
 import tkinter as tk
-from tkinter import ttk
-import ttkbootstrap as ttks
+import ttkbootstrap as ttk
 import requests
 import threading as th
 from Classes import AreaFrame, ReadData
 
 # from ttkbootstrap import Style
 
-root = ttks.Window(themename="flatly")
+root = ttk.Window(themename="darkly")
+root.style.configure('.', font=('Helvetica', 11))
+root.style.configure('Treeview.Heading', font=('Helvetica', 12))
 core = ttk.Frame(root)
-# core.configure(bg='#009999', padx=5, pady=5)
 core.grid()
-# style = Style('flatly')
-root.style.configure('primary.Treeview.Heading', font=('Helvetica', 12))
-root.style.configure('core.TLabel', background='#009999',
-                     foreground='white')
-root.style.configure('primary.TEntry', bordercolor='gray')
-root.style.configure('primary.TButton', font=('Helvetica', 11))
 
 
 top_area = AreaFrame(onFrame=core, height=300, width=350)
