@@ -1,15 +1,25 @@
 from datetime import datetime
 import json
 import tkinter as tk
+from tkinter import ttk
+import ttkbootstrap as ttks
 import requests
 import threading as th
-from Classes import *
+from Classes import AreaFrame, ReadData
 
+# from ttkbootstrap import Style
 
-root = tk.Tk()
-core = tk.Frame(root)
-core.configure(bg='#009999', padx=5, pady=5)
+root = ttks.Window(themename="flatly")
+core = ttk.Frame(root)
+# core.configure(bg='#009999', padx=5, pady=5)
 core.grid()
+# style = Style('flatly')
+root.style.configure('primary.Treeview.Heading', font=('Helvetica', 12))
+root.style.configure('core.TLabel', background='#009999',
+                     foreground='white')
+root.style.configure('primary.TEntry', bordercolor='gray')
+root.style.configure('primary.TButton', font=('Helvetica', 11))
+
 
 top_area = AreaFrame(onFrame=core, height=300, width=350)
 middle_area = AreaFrame(onFrame=core, height=100, width=100)
@@ -82,7 +92,9 @@ def price_wallet(wallet: list):
 
     return kryptoListFromWallet
 
+
 switch_button = False
+
 
 def button_change_time():
     global switch_button
@@ -148,7 +160,7 @@ middle_area_ingrednients()
 
 
 def bottom_area_ingredients():
-    
+
     pass
 
 

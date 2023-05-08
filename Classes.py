@@ -1,25 +1,19 @@
 import json
 import tkinter as tk
 from tkinter import ttk
-from tkinter import ttk
-from ttkbootstrap import Style
+import ttkbootstrap as ttks
+from ttkbootstrap.constants import *
+# from ttkbootstrap import Style
 
 
 class AreaFrame:
 
     def __init__(self, height=0, width=0, onFrame=tk.Frame, color='#009999') -> None:
-        style = Style('flatly')
-        style.configure('primary.Treeview.Heading', font=('Helvetica', 12))
-        style.configure('core.TLabel', background='#009999',
-                        foreground='white')
-        style.configure('primary.TEntry', bordercolor='gray')
-        style.configure('primary.TButton', font=('Helvetica', 11))
-
         self.objList = []
         self.height = height
         self.width = width
-        self.frame = tk.Frame(onFrame, width=self.width, height=self.height)
-        self.frame.configure(bg=color)
+        self.frame = ttks.Frame(onFrame, width=self.width, height=self.height)
+        # self.frame.configure(bg=color)
         self.frame.grid()
 
     def __str__(self) -> str:
@@ -42,7 +36,7 @@ class AreaFrame:
             headings_text: list = [],
             # method: function = ''
     ):
-        treeview = ttk.Treeview(self.frame, style='primary.Treeview')
+        treeview = ttks.Treeview(self.frame, style=SUCCESS)
         self.objList.append(treeview)
 
         treeview['columns'] = columns
