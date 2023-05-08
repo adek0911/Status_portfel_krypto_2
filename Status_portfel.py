@@ -8,7 +8,7 @@ import requests
 import threading as th
 import szczegoly_cjedn as sc
 # from warnings import catch_warnings
-from currency_converter import CurrencyConverter
+# from currency_converter import CurrencyConverter
 import json
 import csv
 

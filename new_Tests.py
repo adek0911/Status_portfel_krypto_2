@@ -167,6 +167,10 @@
 
 
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.pyplot as plt
+import tkinter as tk
 import requests
 import json
 import csv
@@ -190,6 +194,8 @@ with open('App_file\zmienneApiDolar.json', mode='r+', encoding='UTF-8') as file:
 '''
 
 # a = 'https://www.cryptodatadownload.com/cdd/Binance_BTCUSDT_1h.csv'
+
+''' Pobiera i przygotowuje dane do pliku 
 a = 'https://www.cryptodatadownload.com/cdd/Binance_BTCUSDT_d.csv'
 
 result = requests.get(a).text.split('\n', 100)
@@ -207,3 +213,81 @@ with open('testchartdata.csv', 'w', encoding='UTF-8', newline='') as d_wykres:
     # print(f'{data_wykres} wczytane dane')
     # writer.writerow([data_wykres]) #Wpisywana data pliku
     writer.writerows(result)
+'''
+
+with open('testchartdata.csv', 'r', encoding='UTF-8')as file:
+    d_data = file.read().split('\n')
+    del d_data[-1]
+    for i in range((len(d_data))):
+        d_data[i] = d_data[i].split(',')
+
+# d_data = d_data[:10]
+# print(d_data)  # ['2023-05-07', 'BTCUSDT', '28430.1'], ['2023-05-06',
+now = datetime.today()-relativedelta(day=1)  # from datetime to str
+before2week = (now-relativedelta(weeks=2)).strftime('%Y-%m-%d')
+before3m = (now-relativedelta(months=3)).strftime('%Y-%m-%d')
+before1m = (now-relativedelta(months=1)).strftime('%Y-%m-%d')
+now = now.strftime('%Y-%m-%d')
+root = tk.Tk()
+core = tk.Frame(root)
+core.grid()
+
+canvas = tk.Canvas(core, width=430, height=300)
+canvas.pack(side='left')
+
+chart_frame = tk.Frame(canvas)
+chart_frame.configure(bg='#009999')
+canvas.create_window((0, 0), window=chart_frame, anchor='nw')
+for j in range(3):
+    wykres = plt.Figure(figsize=(4.2, 1.9), dpi=100)
+    listx = []
+    listy = []
+    for i in d_data:
+        if j == 0 and i[0] > before2week and i[0] <= now:
+            tmp = i[0][5:]
+            tmp = tmp[3]+tmp[4]+tmp[2]+tmp[0]+tmp[1]
+            listx.append(tmp)
+            listy.append(float(i[2]))
+        if j == 1 and i[0] > before1m and i[0] <= now:
+            tmp = i[0][5:]
+            tmp = tmp[3]+tmp[4]+tmp[2]+tmp[0]+tmp[1]
+            listx.append(tmp)
+            listy.append(float(i[2]))
+        if j == 2 and i[0] > before3m and i[0] <= now:
+            tmp = i[0][5:]
+            tmp = tmp[3]+tmp[4]+tmp[2]+tmp[0]+tmp[1]
+            listx.append(tmp)
+            listy.append(float(i[2]))
+    listy.reverse()
+    listx.reverse()
+    ax1 = wykres.add_subplot(111)
+    ax1.plot(listx, listy)  # x, y
+    if j == 0:
+        ax1.set_xticks(listx[::4])
+    if j == 1:
+        ax1.set_xticks(listx[::7])
+    if j == 2:
+        ax1.set_xticks(listx[::14])
+    line = FigureCanvasTkAgg(wykres, chart_frame)
+    line.get_tk_widget().grid(row=j, padx=10, ipady=45, ipadx=20)
+chart_frame.grid()
+
+root.mainloop()
+'''
+now = datetime.today().strftime('%Y-%m-%d') #from datetime to str
+now2=datetime.strptime(now, '%Y-%m-%d') # from str to datetime
+for num in range(N, -1, -1) : # reverse loop
+'''
+
+
+# before3m = now-relativedelta(month=3)
+# before1m = now-relativedelta(month=1)
+# before2week = now-relativedelta(weeks=2)
+
+# print(before3m)
+# print(before1m)
+# print(before2week)
+
+
+# for i in range(len(d_data)):
+#      d_data[i][0]=d_data[i][0]

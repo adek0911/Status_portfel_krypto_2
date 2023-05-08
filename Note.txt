@@ -76,8 +76,8 @@ Okno do wpisania wartości dla krypto których nie ma w bazie
 Wielowątkowość wczytywania cen krypto 
 
 
-Zamiast wykresów z ostatniego tygodnia zrobić dane z średniej ostatniego dnia, 3 dni, tygodnia 
-2 tyg, miesiąc // do 7 danych aktualnie 5
+Utworzyć listę rozsuwaną która będzie wyświetlać dostępne krypto w wykresach:
+    po wybraniu wyświetla wykresy : 2 tyg, 1 miesiąc oraz 3 miesiące wraz z średnią z tego okresu
 
 Zrobić przycisk analiza:
     Wyświetlanie aktualnego portfela wraz z wartością oraz 
