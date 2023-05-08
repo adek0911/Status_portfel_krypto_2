@@ -1,25 +1,19 @@
 import json
 import tkinter as tk
 from tkinter import ttk
-from tkinter import ttk
-from ttkbootstrap import Style
+import ttkbootstrap as ttks
+from ttkbootstrap.constants import *
+# from ttkbootstrap import Style
 
 
 class AreaFrame:
 
     def __init__(self, height=0, width=0, onFrame=tk.Frame, color='#009999') -> None:
-        style = Style('flatly')
-        style.configure('primary.Treeview.Heading', font=('Helvetica', 12))
-        style.configure('core.TLabel', background='#009999',
-                        foreground='white')
-        style.configure('primary.TEntry', bordercolor='gray')
-        style.configure('primary.TButton', font=('Helvetica', 11))
-
         self.objList = []
         self.height = height
         self.width = width
-        self.frame = tk.Frame(onFrame, width=self.width, height=self.height)
-        self.frame.configure(bg=color)
+        self.frame = ttks.Frame(onFrame, width=self.width, height=self.height)
+        # self.frame.configure(bg=color)
         self.frame.grid()
 
     def __str__(self) -> str:
@@ -40,14 +34,14 @@ class AreaFrame:
             rowspan: int = None,
             columnspan: int = None,
             headings_text: list = [],
-            event=''
+            # method: function = ''
     ):
-        treeview = ttk.Treeview(self.frame, style='primary.Treeview')
+        treeview = ttks.Treeview(self.frame, style=PRIMARY)
         self.objList.append(treeview)
 
         treeview['columns'] = columns
         treeview.configure(show='headings', selectmode='browse')
-        treeview.bind('<<TreeviewSelect>>',)
+        # treeview.bind('<<TreeviewSelect>>', method)
         treeview.grid(row=row, column=column, rowspan=rowspan,
                       columnspan=columnspan, padx=5, pady=5)
 
@@ -59,37 +53,21 @@ class AreaFrame:
             treeview.column(columns[i], width=90, anchor='center')
             treeview.heading(columns[i], text=headings_text[i])
 
-    def add_data_in_treeview(self, objkey: ttk.Treeview, dataObj):
+    def add_data_in_treeview(self, objkey: ttk.Treeview, dataObj, type: str = ''):
         '''Clear treeview, insert data in treeview'''
         for i in objkey.get_children():
             objkey.delete(i)
 
         '''Check for empty value in file'''
-
-        for i in range(len(dataObj.flatFile)):
-            dataObj.flatFile[i] = dataObj.flatFile[i].split(',')
-            for y in range(1, 4):
-                # if dataObj.flatFile[i][2] == '':
-                #     dataObj.flatFile[i][2] = (
-                #         dataObj.flatFile[i][2] / float(dataObj.jsonFile['Cena_Dolar']))
-
-                if (dataObj.flatFile[i][y] == ''):
-                    dataObj.flatFile[i][y] = float('nan')
-                dataObj.flatFile[i][y] = float(dataObj.flatFile[i][y])
-
+        if type == 'txt':
+            for i in range(len(dataObj)):
+                dataObj[i] = dataObj[i].split(',')
         '''Insert data in treeview'''
 
-        for i in range(len(dataObj.flatFile)):
-            objkey.insert('', index=i, values=dataObj.flatFile[i])
+        for i in range(len(dataObj)):
+            objkey.insert('', index=i, values=dataObj[i])
 
-    def add_data_in_treeview_v2(self, objkey: ttk.Treeview, data: list,):  # Nie używana
-        for i in objkey.get_children():
-            objkey.delete(i)
-
-        for i in range(len(data)):
-            objkey.insert('', index=i, values=data[i])
-
-    def treeviewSelect(self, treeview1: ttk.Treeview, treeview2: ttk.Treeview, choice: int):
+    def treeview_Select(self, treeview1: ttk.Treeview, treeview2: ttk.Treeview, choice: int):
         focus1 = treeview1.focus()
         focus2 = treeview2.focus()
 
@@ -110,49 +88,50 @@ class AreaFrame:
         pass
 
     def button_display(self, text: str, row: int, column: int, rowspan=None, columnspan=None, method=None):
-        self.button = ttk.Button(
+        button = ttk.Button(
             self.frame, text=text, style='primary.TButton', command=method)
-        self.button.grid(row=row, column=column, rowspan=rowspan,
-                         columnspan=columnspan, padx=5, pady=5)
+        button.grid(row=row, column=column, rowspan=rowspan,
+                    columnspan=columnspan, padx=5, pady=5)
+        self.objList.append(button)
 
-        pass
+    @staticmethod
+    def choice_portfel(objkey: ttk.Treeview, objkey2: ttk.Treeview):
+        get_children1 = objkey.get_children()
+        index_1 = get_children1.index(objkey.focus())
+        if objkey2.focus() == '':
+            index_2 = index_1
+            focus_selection = objkey2.get_children()[index_1]
+            objkey2.selection_set(focus_selection)
+            objkey2.focus(focus_selection)
+        else:
+            index_2 = objkey2.get_children().index(objkey2.focus())
 
-        '''Błąd potrzebuje pozyskać odpowiedni index treeview'''
+        if index_1 != index_2:
+            focus_selection = objkey2.get_children()[index_1]
+            objkey2.selection_set(focus_selection)
+            objkey2.focus(focus_selection)
 
     # def __getitem__(self, key):
     #     return self.treeview[key]
 
 
-class Read_data:
-    '''Ehh trzeba przerobić by działało na różnych rodzajach plików'''
+class ReadData:
+    '''Create list with file objects'''
 
     def __init__(self) -> None:
-        # with open((str(variables_file)), 'r') as file:
-        #     self.walet_data = file.read().splitlines()
-        # def isNan(num):
-        #     return num != num
-        # for i in range(len(self.walet_data)):
-        #     if (isNan(self.walet_data[i][1]) == True) or (self.walet_data[i][1] == ''):
-        #         self.walet_data[i][1] = float(
-        #             self.walet_data[i][2]*variables_file['Cena_Dolar']).__round__(2)
-
-        #     if (isNan(self.walet_data[i][2]) == True) or (self.walet_data[i][2] == ''):
-        #         self.walet_data[i][2] = float(
-        #             self.walet_data[i][1]/variables_file['Cena_Dolar']).__round__(2)
-        pass
+        self.file_list = []
 
     def read_from_file(self, variableFilePath: str, typefile: str):
-        '''Coś mi tu nie pasuje chyba każda klasa będzie trzymać osobne dane
-            Sometching in missing maybe every object has only one read file
-        '''
+        '''Give path to file and file extension'''
         if typefile == 'json':
             with (open(variableFilePath, 'r'))as file:
-                self.jsonFile = json.load(file)
-            # return self.jsonFile
+                jsonFile = json.load(file)
+                self.file_list.append(jsonFile)
 
         elif typefile == 'txt' or typefile == 'csv':
             with open(variableFilePath, 'r') as file:
-                self.flatFile = file.read().splitlines()
+                flatFile = file.read().splitlines()
+                self.file_list.append(flatFile)
             # return self.flatFile
 
     # def __getitem__(self, key):
