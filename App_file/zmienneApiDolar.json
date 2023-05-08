@@ -1,0 +1,12 @@
+{
+    "url": "https://api.apilayer.com/currency_data/live?source=USD&currencies=PLN",
+    "headers": {
+        "apikey": "o49OHWHzwbhE38MkfZZNDoOCV3bgOkBt"
+    },
+    "Stable_price": {
+        "Dolar": [
+            4.153071,
+            "07-05-2023"
+        ]
+    }
+}

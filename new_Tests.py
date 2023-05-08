@@ -35,7 +35,7 @@
 #     def popup(self):
 #         self.w=popupWindow(self.master)
 #         self.b["state"] = "disabled"
-#         self.b2["state"] = "disabled" 
+#         self.b2["state"] = "disabled"
 #         self.master.wait_window(self.w.top)
 #         self.b["state"] = "normal"
 #         self.b2["state"] = "normal"
@@ -50,7 +50,7 @@
 #     m=mainWindow(root)
 #     root.mainloop()
 
-#Przykład connection ERROR 
+# Przykład connection ERROR
 
 # from requests.exceptions import ConnectionError
 # try:
@@ -59,7 +59,7 @@
 #    print e
 #    r = "No response"
 
-  
+
 # zmienne_file=json.load(open('App_file\zmienne.json'))
 
 # # print(zmienne_file['connect_file'])
@@ -77,7 +77,7 @@
 
 # import threading as th
 # import time
-# def dodanie(lista :list,poczatek:int,koniec:int): 
+# def dodanie(lista :list,poczatek:int,koniec:int):
 #     for i in range(poczatek,koniec,1):
 #         lista.append(i)
 
@@ -108,7 +108,7 @@
 #     len_l12=int((len_l1/3)+1)
 #     len_l13=int((len_l1-len_l12)+1)
 
-    
+
 # print(len_l1)
 # print(len_l12)
 # print(len_l13)
@@ -166,23 +166,44 @@
 #  raz na dobę
 
 
-'''
-Działa tylko trzeba wrzucić do aplikacji oraz ustawić by zostało sprwdzane co 24 h do aktualizacji
+from datetime import datetime
 import requests
 import json
+import csv
 
-with open('App_file\zmienneTest.json',mode='r+',encoding='UTF-8') as file:
-    url = "https://api.apilayer.com/currency_data/live?source=USD&currencies=PLN"
-    headers= {"apikey": "o49OHWHzwbhE38MkfZZNDoOCV3bgOkBt"}
-    response = requests.request("GET", url, headers=headers)
-    status_code = response.status_code
-    result = json.loads(response.text)
 
-    file_str=file.read()
-    a=json.loads(file_str)
-    a['Stable_price']['Dolar']=result['quotes']['USDPLN']
+'''
+with open('App_file\zmienneApiDolar.json', mode='r+', encoding='UTF-8') as file:
+    last_time = datetime.now().strftime('%d-%m-%Y')
+    read_file = json.load(file)
 
-    file.seek(0,0)
-    json.dump(a,file,ensure_ascii=False,indent=4)
+    if read_file['Stable_price']['Dolar'][1] != last_time:
+        print('Request')
+        response = requests.get(read_file['url'], headers=read_file['headers'])
+        status_code = response.status_code
+        if status_code == 200:
+            result = json.loads(response.text)
+            read_file['Stable_price']['Dolar'] = (
+                result['quotes']['USDPLN'], last_time)
+            file.seek(0, 0)
+            json.dump(read_file, file, ensure_ascii=False, indent=4)
 '''
 
+# a = 'https://www.cryptodatadownload.com/cdd/Binance_BTCUSDT_1h.csv'
+a = 'https://www.cryptodatadownload.com/cdd/Binance_BTCUSDT_d.csv'
+
+result = requests.get(a).text.split('\n', 100)
+# print(result[0:2])#'Unix,Date,Symbol,Open,High,Low,Close,Volume BTC,Volume USDT,tradecount'
+del (result[:2])
+# result=result[:93]
+result = result[:100]
+for i in range(len(result)):
+    result[i] = result[i].split(',')
+    del result[i][0], result[i][2:5], result[i][3:]
+    result[i][0:1] = result[i][0].split(' ')
+
+with open('testchartdata.csv', 'w', encoding='UTF-8', newline='') as d_wykres:
+    writer = csv.writer(d_wykres)
+    # print(f'{data_wykres} wczytane dane')
+    # writer.writerow([data_wykres]) #Wpisywana data pliku
+    writer.writerows(result)
