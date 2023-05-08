@@ -36,7 +36,7 @@ class AreaFrame:
             headings_text: list = [],
             # method: function = ''
     ):
-        treeview = ttks.Treeview(self.frame, style=SUCCESS)
+        treeview = ttks.Treeview(self.frame, style=PRIMARY)
         self.objList.append(treeview)
 
         treeview['columns'] = columns
