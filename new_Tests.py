@@ -1,4 +1,3 @@
-
 # from currency_converter import CurrencyConverter
 # from datetime import date
 # c = CurrencyConverter().convert(1,'USD','PLN')
@@ -166,7 +165,7 @@
 #  raz na dobę
 
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
@@ -174,9 +173,10 @@ import tkinter as tk
 import requests
 import json
 import csv
+import ttkbootstrap as ttk
+from ttkbootstrap.scrolled import ScrolledFrame
 
-
-'''
+"""
 with open('App_file\zmienneApiDolar.json', mode='r+', encoding='UTF-8') as file:
     last_time = datetime.now().strftime('%d-%m-%Y')
     read_file = json.load(file)
@@ -191,93 +191,196 @@ with open('App_file\zmienneApiDolar.json', mode='r+', encoding='UTF-8') as file:
                 result['quotes']['USDPLN'], last_time)
             file.seek(0, 0)
             json.dump(read_file, file, ensure_ascii=False, indent=4)
-'''
+"""
 
 # a = 'https://www.cryptodatadownload.com/cdd/Binance_BTCUSDT_1h.csv'
 
-''' Pobiera i przygotowuje dane do pliku 
-a = 'https://www.cryptodatadownload.com/cdd/Binance_BTCUSDT_d.csv'
 
-result = requests.get(a).text.split('\n', 100)
-# print(result[0:2])#'Unix,Date,Symbol,Open,High,Low,Close,Volume BTC,Volume USDT,tradecount'
-del (result[:2])
-# result=result[:93]
-result = result[:100]
-for i in range(len(result)):
-    result[i] = result[i].split(',')
-    del result[i][0], result[i][2:5], result[i][3:]
-    result[i][0:1] = result[i][0].split(' ')
+# Pobiera i przygotowuje dane do pliku
+# a = 'https://www.cryptodatadownload.com/cdd/Binance_BTCUSDT_d.csv'
 
-with open('testchartdata.csv', 'w', encoding='UTF-8', newline='') as d_wykres:
-    writer = csv.writer(d_wykres)
-    # print(f'{data_wykres} wczytane dane')
-    # writer.writerow([data_wykres]) #Wpisywana data pliku
-    writer.writerows(result)
-'''
+# Zrobić warunek by dane były pobierane tylko raz dziennie
+today = datetime.today().strftime("%Y-%m-%d")
+zm = ["ADA", "LTC", "DOGE", "XRP", "BCH", "BTC", "LRC", "ETH", "ARI10"]
 
-with open('testchartdata.csv', 'r', encoding='UTF-8')as file:
-    d_data = file.read().split('\n')
-    del d_data[-1]
-    for i in range((len(d_data))):
-        d_data[i] = d_data[i].split(',')
 
-# d_data = d_data[:10]
-# print(d_data)  # ['2023-05-07', 'BTCUSDT', '28430.1'], ['2023-05-06',
-now = datetime.today()-relativedelta(day=1)  # from datetime to str
-before2week = (now-relativedelta(weeks=2)).strftime('%Y-%m-%d')
-before3m = (now-relativedelta(months=3)).strftime('%Y-%m-%d')
-before1m = (now-relativedelta(months=1)).strftime('%Y-%m-%d')
-now = now.strftime('%Y-%m-%d')
-root = tk.Tk()
+def update_charts_data():
+    with open("App_file\zmienne.json", "r+") as file:
+        jsonFile = json.load(file)
+        if jsonFile["Charts_data"] != today:
+            for i in zm:
+                url = requests.get(
+                    f"https://www.cryptodatadownload.com/cdd/Binance_{i}USDT_d.csv"
+                )
+                if url.status_code == 200:
+                    result = url.text.split("\n", 100)
+                    # print(result[0:2])#'Unix,Date,Symbol,Open,High,Low,Close,Volume BTC,Volume USDT,tradecount'
+                    del result[:2]
+                    # result=result[:93]
+                    result = result[:100]
+                    for j in range(len(result)):
+                        result[j] = result[j].split(",")
+                        del result[j][0], result[j][2:5], result[j][3:]
+                        result[j][0:1] = result[j][0].split(" ")
+
+                    with open(
+                        f"Chart_file\\{i}_chartdata.csv",
+                        "w",
+                        encoding="UTF-8",
+                        newline="",
+                    ) as d_wykres:
+                        writer = csv.writer(d_wykres)
+                        # print(f'{data_wykres} wczytane dane')
+                        # writer.writerow([data_wykres]) #Wpisywana data pliku
+                        writer.writerows(result)
+                if url.status_code != 200:
+                    zm.pop(zm.index(i))
+            jsonFile["Charts_data"] = today
+            file.seek(0, 0)
+            json.dump(jsonFile, file, ensure_ascii=False, indent=4)
+
+
+def selected_combobox(event):
+    choice = test_box.get()
+    try:
+        with open(f"Chart_file\\{choice}_chartdata.csv", "r", encoding="UTF-8") as file:
+            d_data = file.read().split("\n")
+            del d_data[-1]
+            for i in range((len(d_data))):
+                d_data[i] = d_data[i].split(",")
+        # print(d_data)  # ['2023-05-07', 'BTCUSDT', '28430.1'], ['2023-05-06',
+        # canvas2 = tk.Canvas(core)
+        # canvas2.grid(row=1, column=0, columnspan=2)
+
+        chart_frame = tk.Frame(canvas)
+        # chart_frame.configure(bg="Black")
+        canvas.create_window((0, 0), window=chart_frame, anchor="nw")
+        canvas.pack(side="left")
+
+        def add_to_chart_lists():
+            tmp = i[0][5:]
+            tmp = tmp[3] + tmp[4] + tmp[2] + tmp[0] + tmp[1]
+
+            chart_list[0].append(tmp)
+            chart_list[1].append(float(i[2]))
+            pass
+
+        for j in range(3):
+            wykres = plt.Figure(
+                figsize=(4.2, 1.5), dpi=100, facecolor=(0.18, 0.31, 0.31)
+            )
+            chart_list = [[], []]
+            for i in d_data:
+                # if j == 0 and i[0] > data_range[0] and i[0] <= data_range[3]:
+                if j == 0 and i[0] > data_range[0]:  # and i[0] <= data_range[3]:
+                    add_to_chart_lists()
+                if j == 1 and i[0] > data_range[1]:
+                    add_to_chart_lists()
+
+                if j == 2 and i[0] > data_range[2]:
+                    add_to_chart_lists()
+
+            chart_list[0].reverse()
+            chart_list[1].reverse()
+
+            def mean():
+                result = sum(chart_list[1]) / len(chart_list[1])
+                return result.__round__(3)
+
+            ax1 = wykres.add_subplot(111)
+            ax1.set_facecolor("darkgrey")
+            ax1.tick_params(labelcolor="White")
+            ax1.grid(axis="both", color="grey")
+            ax1.plot(chart_list[0], chart_list[1])  # x, y
+
+            def conf_plot(j, text):
+                ax1.set_xticks(chart_list[0][::j])
+                ax1.set_title(text, color="white", loc="left")
+                ax1.hlines(
+                    mean(),
+                    0,
+                    len(chart_list[0]),
+                    colors="r",
+                    label=f"Średnia {str(mean())}$",
+                )
+                ax1.set_xlim(chart_list[0][0], chart_list[0][-1])
+
+                ax1.plot(
+                    chart_list[1].index(max(chart_list[1])),
+                    max(chart_list[1]),
+                    "o",
+                    color="cyan",
+                )
+                ax1.plot(
+                    chart_list[1].index(min(chart_list[1])),
+                    min(chart_list[1]),
+                    "o",
+                )
+                ax1.legend()  # labelcolor="white"
+
+            if j == 0:
+                conf_plot(
+                    3,
+                    f"Ostatnie 2 tyg. max: {max(chart_list[1])}, min: {min(chart_list[1])} ",
+                )
+            if j == 1:
+                conf_plot(
+                    7,
+                    f"Ostatni miesiąc max: {max(chart_list[1])}, min: {min(chart_list[1])}",
+                )
+            if j == 2:
+                conf_plot(
+                    14,
+                    f"Ostatnie 3 miesiące max: {max(chart_list[1])}, min: {min(chart_list[1])}",
+                )
+            line = FigureCanvasTkAgg(wykres, chart_frame)
+            line.get_tk_widget().grid(row=j, ipady=45, ipadx=0)  # , ipadx=20)
+    except FileNotFoundError:
+        print("Nie ma pliku o takiej nazwie")
+    chart_frame.grid(row=0, column=0)
+    # charts_scrollbar.config(command=canvas.yview)
+    # canvas.configure(scrollregion=canvas.bbox("all"))
+
+
+root = ttk.Window(themename="darkly")
 core = tk.Frame(root)
 core.grid()
+scroll_frame = ScrolledFrame(core, autohide=True, width=410, height=400)
+scroll_frame.grid(row=1, column=0, columnspan=2)
+print(scroll_frame.vscroll.get())
+frame_wykresy = ttk.Frame(core)
+frame_wykresy.grid(row=1, column=0, columnspan=2, pady=10)
+plt.style.use("seaborn-v0_8-darkgrid")
 
-canvas = tk.Canvas(core, width=430, height=300)
-canvas.pack(side='left')
+test_box = ttk.Combobox(core, values=zm, style="primary", state="readonly")
+test_box.grid(row=0, column=1)  # .pack(anchor="ne")  #
+label = ttk.Label(core, text="Wybierz krypto do wyświetlania wykresu:")
+label.grid(row=0, column=0)  # .pack(anchor="nw")  #
+canvas = ttk.Canvas(scroll_frame)  # , width=430, height=300)
 
-chart_frame = tk.Frame(canvas)
-chart_frame.configure(bg='#009999')
-canvas.create_window((0, 0), window=chart_frame, anchor='nw')
-for j in range(3):
-    wykres = plt.Figure(figsize=(4.2, 1.9), dpi=100)
-    listx = []
-    listy = []
-    for i in d_data:
-        if j == 0 and i[0] > before2week and i[0] <= now:
-            tmp = i[0][5:]
-            tmp = tmp[3]+tmp[4]+tmp[2]+tmp[0]+tmp[1]
-            listx.append(tmp)
-            listy.append(float(i[2]))
-        if j == 1 and i[0] > before1m and i[0] <= now:
-            tmp = i[0][5:]
-            tmp = tmp[3]+tmp[4]+tmp[2]+tmp[0]+tmp[1]
-            listx.append(tmp)
-            listy.append(float(i[2]))
-        if j == 2 and i[0] > before3m and i[0] <= now:
-            tmp = i[0][5:]
-            tmp = tmp[3]+tmp[4]+tmp[2]+tmp[0]+tmp[1]
-            listx.append(tmp)
-            listy.append(float(i[2]))
-    listy.reverse()
-    listx.reverse()
-    ax1 = wykres.add_subplot(111)
-    ax1.plot(listx, listy)  # x, y
-    if j == 0:
-        ax1.set_xticks(listx[::4])
-    if j == 1:
-        ax1.set_xticks(listx[::7])
-    if j == 2:
-        ax1.set_xticks(listx[::14])
-    line = FigureCanvasTkAgg(wykres, chart_frame)
-    line.get_tk_widget().grid(row=j, padx=10, ipady=45, ipadx=20)
-chart_frame.grid()
+now = datetime.today() + relativedelta(days=-1)  # from datetime to str
+data_range = (
+    (now + relativedelta(weeks=-2)).strftime("%Y-%m-%d"),
+    (now + relativedelta(months=-1)).strftime("%Y-%m-%d"),
+    (now + relativedelta(months=-3)).strftime("%Y-%m-%d"),
+    now.strftime("%Y-%m-%d"),
+)
 
+test_box.current(0)
+test_box.bind("<<ComboboxSelected>>", selected_combobox)
+
+selected_combobox(None)
+# scroll_frame.yview_scroll(50000, "units") ni działa
+
+root.resizable(False, False)
 root.mainloop()
-'''
+
+
+"""
 now = datetime.today().strftime('%Y-%m-%d') #from datetime to str
 now2=datetime.strptime(now, '%Y-%m-%d') # from str to datetime
 for num in range(N, -1, -1) : # reverse loop
-'''
+"""
 
 
 # before3m = now-relativedelta(month=3)
