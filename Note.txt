@@ -88,3 +88,6 @@ Dodać kolumne w tabeli wartości "cena podczas zakupu"
 
 do symboli w url z zmiennych
 ["BTCUSDT","BNBUSDT"]
+#
+Ustawić pobieranie 
+#
