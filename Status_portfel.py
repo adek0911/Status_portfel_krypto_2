@@ -589,7 +589,7 @@ frame_button_exit.grid(row=3, column=0, pady=10)
 # endregion
 
 
-# region pobranie danych
+# pobranie danych
 frame_wykresy = Frame(core)
 frame_wykresy.grid(row=2, column=0, pady=10)
 
@@ -661,7 +661,7 @@ def wykresy():
     for i in lista_final:
         if i[1] not in t_lista2:
             t_lista2.append(i[1])
-    # endregion
+
 
 # region wykresu
 

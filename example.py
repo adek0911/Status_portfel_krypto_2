@@ -5,39 +5,57 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import json
 
-# app = ttk.Window(themename="darkly")
+app = ttk.Window(themename="darkly")
+
+app.style.configure(
+    ".",
+    font=("Helvetica", 12),
+    highlightbackground=0,
+    buttonuprelief="",
+)
+# Login window for choice wallet
+
+core = ttk.Frame(app, height=100, width=100)
+core.grid()
+credentials = {"Admin": "123"}
+wallet_path = {}
 
 
-# scroll_frame = ScrolledFrame(app, autohide=True, width=400, height=400)  # , height=100)
+def test_value():
+    login = entry.get()
+    if login in credentials:
+        password = entry1.get()
+        if password == credentials[login]:
+            print("Brawo udało się zalogować")
+        else:
+            print("Błędne hasło")
+    else:
+        print("Nie udało się zalogować")
+    entry1.delete(0, END)
 
-# # sf.yview_moveto(1000)
-# # sf.yview_scroll(0.2, "units")
-# scroll_frame.grid()  # .pack(fill=BOTH, expand=YES)  # , padx=10, pady=10)
 
-# # add a large number of checkbuttons into the scrolled frame
-# canvas = ttk.Canvas(scroll_frame)
-# test_frame = ttk.Frame(canvas)
+label = ttk.Label(
+    core, text="Podaj login i hasło do portfela", style="Label", font=("Helvetica", 12)
+)
+label.grid(row=0, column=0, columnspan=2, padx=15, pady=5)
+
+label1 = ttk.Label(core, text="Login: ", font=("Helvetica", 12))
+label1.grid(row=1, column=0, padx=5, pady=5, sticky="e")
+entry = ttk.Entry(core, style="primary", width=15, justify="center")
+entry.grid(row=1, column=1, padx=5, pady=5, sticky="w")
+label2 = ttk.Label(core, text="Hasło: ", font=("Helvetica", 12))
+label2.grid(row=2, column=0, padx=5, pady=5, sticky="e")
+entry1 = ttk.Entry(core, style="primary", width=15, justify="center", show="*")
+
+entry.insert(0, "Admin")  # Only for tests
+entry1.insert(0, "123")  # Only for tests
+# entry1.configure(show="") If i wont to see password
+entry1.grid(row=2, column=1, padx=5, pady=5, sticky="w")
+button = ttk.Button(
+    core, text="Zatwierdź", bootstyle="primary", width=10, command=test_value
+)
+button.grid(row=3, column=0, padx=5, pady=5, columnspan=2)
+core.wait_window()
 
 
-# canvas.create_window((0, 0), window=test_frame, anchor="nw")
-# canvas.pack(side="left")
-# plt.style.use("seaborn-v0_8-darkgrid")
-# for i in range(3):
-#     wykres = plt.Figure(
-#         figsize=(4.2, 1.9), dpi=100, facecolor=(0.18, 0.31, 0.31)
-#     )  # facecolor=(0.18, 0.31, 0.31))
-#     ax1 = wykres.add_subplot(111)
-#     ax1.set_facecolor("darkgrey")
-#     ax1.tick_params(labelcolor="White")
-#     ax1.plot([0, 1, 2, 3, 4, 5], [2, 4, 6, 8, 10, 12])
-#     ax1.set_title(f"Przejście pętli {i}", color="white")
-#     line = FigureCanvasTkAgg(wykres, test_frame)
-#     line.get_tk_widget().grid(row=i, ipady=45)
-# test_frame.grid()
-# app.mainloop()
-# with open("App_file\zmienne.json", "r+") as file:
-#     jsonFile = json.load(file)
-#     if not "ARI10" in jsonFile["Charts_no_krypto_data"]:
-#         jsonFile["Charts_no_krypto_data"].append("ARI10")
-#     file.seek(0, 0)
-#     json.dump(jsonFile, file, ensure_ascii=False, indent=4)
+app.mainloop()

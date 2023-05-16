@@ -25,7 +25,7 @@ class AreaFrame:
         return "Aktualnie jesteś w ramce głownej"
 
     def text_display(
-        self, text: str, row: int, column: int, rowspan=None, columnspan=None
+        self, text: str, row: int, column: int, rowspan=None, columnspan=None, **kwargs
     ):
         label = ttk.Label(self.frame, text=text, style="Label", font=("Helvetica", 12))
         label.grid(
@@ -33,8 +33,8 @@ class AreaFrame:
             column=column,
             rowspan=rowspan,
             columnspan=columnspan,
-            padx=5,
             pady=5,
+            **kwargs,
         )
         self.objList.append(label)
 
@@ -114,17 +114,16 @@ class AreaFrame:
         column: int,
         rowspan=None,
         columnspan=None,
-        method=None,
+        command=None,
+        width=8,
+        **kwargs,
     ):
-        button = ttk.Button(self.frame, text=text, bootstyle="primary", command=method)
+        button = ttk.Button(
+            self.frame, text=text, bootstyle="primary", command=command, width=width
+        )
 
         button.grid(
-            row=row,
-            column=column,
-            rowspan=rowspan,
-            columnspan=columnspan,
-            padx=5,
-            pady=5,
+            row=row, column=column, rowspan=rowspan, columnspan=columnspan, **kwargs
         )
         self.objList.append(button)
 
@@ -160,9 +159,10 @@ class AreaFrame:
         combobox.grid(row=row, column=column, **kwargs)
         self.objList.append(combobox)
 
+    # Przerobić na statyczną metode
     def chart(self, krypto_list: list):
         plt.style.use("seaborn-v0_8-darkgrid")
-        scroll_frame = ScrolledFrame(self.frame, autohide=True, width=410, height=400)
+        scroll_frame = ScrolledFrame(self.frame, autohide=True, width=410, height=260)
         scroll_frame.grid(row=1, column=0, columnspan=2)
 
         frame_wykresy = ttk.Frame(self.frame)
@@ -314,12 +314,47 @@ class AreaFrame:
 
         selected_combobox(None)
 
+    def entry_display(
+        self,
+        state,
+        row,
+        column,
+        result_value: float = 0,
+        justify="left",
+        width=10,
+        index: int = 0,
+        text: str = "",
+        insert: bool = False,
+    ):
+        entry = ttk.Entry(self.frame, style="primary", width=width, justify=justify)
+        # if result_value < 0:
+        #     entry.configure(style="negative.primary.TEntry")
+        #     pass
+        if insert == True:
+            entry.insert(index, f"{str(result_value)} {text}")
+        entry["state"] = state
+        entry.grid(row=row, column=column, padx=5, pady=5)
+        self.objList.append(entry)
+
+
+class TopFrame:
+    def __init__(self, **kwargs) -> None:
+        self.frame = ttk.Toplevel(resizable=(False, False))
+        self.frame.grid(**kwargs)
+
 
 class ReadData:
     """Create list with file objects"""
 
     def __init__(self) -> None:
         self.file_list = []
+        self.result_values = {
+            "Profit_zl": 0,
+            "Profit_dollar": 0,
+            "Profit_%": "",
+            "Value_of_wallet": 0,
+            "Invest_value": 0,
+        }
 
     def read_from_file(self, variableFilePath: str, typefile: str):
         """Give path to file and file extension"""

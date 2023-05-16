@@ -68,7 +68,6 @@ LTC good
 DOGE good
 LRC good
 
-15.12.2022,ETH,Kupno,5500,1500,1
 
 NAPISAĆ FUKCJE DO PRZYCISKÓW ZMIANY Szczegoly_zakupow   DONE
 
@@ -86,8 +85,18 @@ Zrobić przycisk analiza:
 
 Dodać kolumne w tabeli wartości "cena podczas zakupu"
 
-do symboli w url z zmiennych
-["BTCUSDT","BNBUSDT"]
-#
-Ustawić pobieranie 
-#
+16.05.2023
+    Przerobić i wstawić pod przycisk szczegóły zakupów
+    Stowrzyć plik na serwerze z danymi do logowania oraz stworzyć do niego requesta
+    #aktualnie działa na lokalnych plikach
+    Zrobić całą logikę na temat wyboru portfeli w ekranie głównym:
+        zmiana wartości w tabelach: portfel, wyliczenia oraz wyniki
+        Zaktualizować listę możliwych wykresów na bazie nowego portfela
+    Zrobić blokadę na zamknięcie okna logowania by dane się nie wczytywały
+    Zrobić możliwość odczytu danych bez internetu
+    Zaprojektować jak będzie wyglądało okno bota oraz jego możliwości
+    Stworzyć przycisk założenia gdzie będą przechowywane zmienne z tabeli wartości 
+oraz będzie można analizować nowe inwestycje jak wpływają na wartość aktywów
+# Będą zapisane lokalnie dla każdego loginu/ portfela osobno
+
+
