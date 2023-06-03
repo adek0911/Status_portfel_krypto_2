@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import requests
 from ttkbootstrap.scrolled import ScrolledFrame
 import csv
+import tkinter.messagebox as msgbox
 
 # import tkinter as tk
 # from ttkbootstrap import Style
@@ -25,9 +26,18 @@ class AreaFrame:
         return "Aktualnie jesteś w ramce głownej"
 
     def text_display(
-        self, text: str, row: int, column: int, rowspan=None, columnspan=None, **kwargs
+        self,
+        text: str,
+        row: int,
+        column: int,
+        rowspan=None,
+        columnspan=None,
+        style="TLabel",
+        **kwargs,
     ):
-        label = ttk.Label(self.frame, text=text, style="Label", font=("Helvetica", 12))
+        label = ttk.Label(
+            self.frame, text=text, style=style
+        )  # , font=("Helvetica", 12)
         label.grid(
             row=row,
             column=column,
@@ -43,17 +53,16 @@ class AreaFrame:
         columns: tuple,
         row: int,
         column: int,
+        headings_text: list,
         rowspan: int = None,
         columnspan: int = None,
-        headings_text: list = [],
-        # method: function = ''
+        width: int = 90,
     ):
         treeview = ttk.Treeview(self.frame, bootstyle="primary")
-        self.objList.append(treeview)
 
         treeview["columns"] = columns
         treeview.configure(show="headings", selectmode="browse")
-        # treeview.bind('<<TreeviewSelect>>', method)
+
         treeview.grid(
             row=row,
             column=column,
@@ -66,10 +75,12 @@ class AreaFrame:
         for i in range(len(headings_text)):
             headings_text[i] = headings_text[i].replace(" ", "\n ", 1)
 
-        treeview.heading("#0", text="\n")
         for i in range(len(columns)):
-            treeview.column(columns[i], width=90, anchor="center")
+            treeview.column(columns[i], width=width, anchor="center")
             treeview.heading(columns[i], text=headings_text[i])
+        treeview.heading("#0", text="\n")
+
+        self.objList.append(treeview)
 
     def add_data_in_treeview(self, objkey: ttk.Treeview, dataObj, type: str = ""):
         """Clear treeview, insert data in treeview"""
@@ -79,7 +90,11 @@ class AreaFrame:
         """Check for empty value in file"""
         if type == "txt":
             for i in range(len(dataObj)):
-                dataObj[i] = dataObj[i].split(",")
+                for j in range(1, len(dataObj[i])):
+                    try:
+                        dataObj[i][j] = float(dataObj[i][j]).__round__(4)
+                    except ValueError:
+                        dataObj[i][j] = str(dataObj[i][j])
         """Insert data in treeview"""
 
         for i in range(len(dataObj)):
@@ -121,7 +136,6 @@ class AreaFrame:
         button = ttk.Button(
             self.frame, text=text, bootstyle="primary", command=command, width=width
         )
-
         button.grid(
             row=row, column=column, rowspan=rowspan, columnspan=columnspan, **kwargs
         )
@@ -157,27 +171,11 @@ class AreaFrame:
             width=width,
         )
         combobox.grid(row=row, column=column, **kwargs)
+        combobox.current(0)
         self.objList.append(combobox)
 
     # Przerobić na statyczną metode
     def chart(self, krypto_list: list):
-        plt.style.use("seaborn-v0_8-darkgrid")
-        scroll_frame = ScrolledFrame(self.frame, autohide=True, width=410, height=260)
-        scroll_frame.grid(row=1, column=0, columnspan=2)
-
-        frame_wykresy = ttk.Frame(self.frame)
-        frame_wykresy.grid(row=1, column=0, columnspan=2, pady=10)
-        canvas = ttk.Canvas(scroll_frame)  # , width=430, height=300)
-
-        today = datetime.today().strftime("%Y-%m-%d")
-        now = datetime.today() + relativedelta(days=-1)  # from datetime to str
-        data_range = (
-            (now + relativedelta(weeks=-2)).strftime("%Y-%m-%d"),
-            (now + relativedelta(months=-1)).strftime("%Y-%m-%d"),
-            (now + relativedelta(months=-3)).strftime("%Y-%m-%d"),
-            now.strftime("%Y-%m-%d"),
-        )
-
         def update_charts_data(krypto_list):
             with open("App_file\zmienne.json", "r+") as file:
                 jsonFile = json.load(file)
@@ -191,7 +189,6 @@ class AreaFrame:
                             result = url.text.split("\n", 100)
                             # print(result[0:2])#'Unix,Date,Symbol,Open,High,Low,Close,Volume BTC,Volume USDT,tradecount'
                             del result[:2]
-                            # result=result[:93]
                             result = result[:100]
                             for j in range(len(result)):
                                 result[j] = result[j].split(",")
@@ -213,6 +210,25 @@ class AreaFrame:
                     file.seek(0, 0)
                     json.dump(jsonFile, file, ensure_ascii=False, indent=4)
 
+        plt.style.use("seaborn-v0_8-darkgrid")
+        scroll_frame = ScrolledFrame(
+            self.frame, autohide=True, width=410, height=260
+        )  # 410
+        scroll_frame.grid(row=1, column=0, columnspan=2)
+
+        frame_wykresy = ttk.Frame(self.frame)
+        frame_wykresy.grid(row=1, column=0, columnspan=2, pady=10)
+        canvas = ttk.Canvas(scroll_frame)
+
+        today = datetime.today().strftime("%Y-%m-%d")
+        now = datetime.today() + relativedelta(days=-1)  # from datetime to str
+        data_range = (
+            (now + relativedelta(weeks=-2)).strftime("%Y-%m-%d"),
+            (now + relativedelta(months=-1)).strftime("%Y-%m-%d"),
+            (now + relativedelta(months=-3)).strftime("%Y-%m-%d"),
+            now.strftime("%Y-%m-%d"),
+        )
+
         def selected_combobox(event):
             update_charts_data(krypto_list)
             choice = self.objList[1].get()
@@ -221,7 +237,7 @@ class AreaFrame:
                     f"Chart_file\\{choice}_chartdata.csv", "r", encoding="UTF-8"
                 ) as file:
                     d_data = file.read().split("\n")
-                    del d_data[-1]
+                    del d_data[-1]  # data
                     for i in range((len(d_data))):
                         d_data[i] = d_data[i].split(",")
                 chart_frame = ttk.Frame(canvas)
@@ -238,8 +254,8 @@ class AreaFrame:
 
                 for j in range(3):
                     wykres = plt.Figure(
-                        figsize=(4.2, 1.6), dpi=100, facecolor=(0.18, 0.31, 0.31)
-                    )
+                        figsize=(3.2, 0.5), dpi=100, facecolor=(0.18, 0.31, 0.31)
+                    )  # figsize=(4.2, 1.6),
                     chart_list = [[], []]
                     for i in d_data:
                         if j == 0 and i[0] > data_range[0]:
@@ -265,7 +281,9 @@ class AreaFrame:
                     def conf_plot(j, text):
                         ax1.set_xticks(chart_list[0][::j])
                         # ax1.set_title(text, color="white", loc="left")
-                        ax1.set_title(text, color="white", loc="left", x=-0.13)
+                        ax1.set_title(
+                            text, color="white", loc="left", x=-0.13, fontsize=11
+                        )
                         ax1.hlines(
                             mean(),
                             0,
@@ -301,12 +319,15 @@ class AreaFrame:
                     if j == 2:
                         conf_plot(
                             14,
-                            f"Ostatnie 3 miesiące max: {max(chart_list[1])}, min: {min(chart_list[1])}",
+                            f"Ost. 3 miesiące max: {max(chart_list[1])}, min: {min(chart_list[1])}",
                         )
                     line = FigureCanvasTkAgg(wykres, chart_frame)
-                    line.get_tk_widget().grid(row=j, ipady=45)
+                    line.get_tk_widget().grid(row=j, ipady=45)  # , ipady=45)
+            # Nie było jeszcze sprawdzane
             except FileNotFoundError:
+                msgbox.INFO("Nie ma pliku o takiej nazwie")
                 print("Nie ma pliku o takiej nazwie")
+
             chart_frame.grid(row=0, column=0)
 
         self.objList[1].current(0)
@@ -316,9 +337,9 @@ class AreaFrame:
 
     def entry_display(
         self,
-        state,
         row,
         column,
+        state="normal",
         result_value: float = 0,
         justify="left",
         width=10,
@@ -366,7 +387,9 @@ class ReadData:
         elif typefile == "txt" or typefile == "csv":
             with open(variableFilePath, "r") as file:
                 flatFile = file.read().splitlines()
-                self.file_list.append(flatFile)
+            for i in range(len(flatFile)):
+                flatFile[i] = flatFile[i].split(",")
+            self.file_list.append(flatFile)
             # return self.flatFile
 
     # def __getitem__(self, key):
@@ -374,3 +397,20 @@ class ReadData:
 
     # def __len__(self):
     #     return len(self.walet_data)
+
+
+class ReadFile:
+    def __init__(self, path, type_file):
+        if type_file == "txt":
+            with open(path, "r", encoding="utf-8", newline="") as File:
+                data = File.read().splitlines()
+            for i in range(len(data)):
+                data[i] = data[i].split(",")
+        else:
+            print("Nie posiadam takiego typu")
+
+        self.file_data = data
+
+        @property
+        def file_data(self) -> list:
+            return self.file_data

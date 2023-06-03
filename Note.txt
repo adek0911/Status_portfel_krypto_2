@@ -33,6 +33,7 @@ BTC brakuje ? # zrobione
 
 threading zrobić na wprawadzanie danych do ekranu głownego
 
+#Done
 Filtry w szczegółach zakupów //zrobione
 data roczny filtr //zrobione
 Krypto //zrobione
@@ -98,5 +99,9 @@ Dodać kolumne w tabeli wartości "cena podczas zakupu"
     Stworzyć przycisk założenia gdzie będą przechowywane zmienne z tabeli wartości 
 oraz będzie można analizować nowe inwestycje jak wpływają na wartość aktywów
 # Będą zapisane lokalnie dla każdego loginu/ portfela osobno
+
+
+Plik z szczegółami zakupu
+
 
 
