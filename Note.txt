@@ -101,3 +101,7 @@ oraz będzie można analizować nowe inwestycje jak wpływają na wartość akty
 # Będą zapisane lokalnie dla każdego loginu/ portfela osobno
 
 
+Plik z szczegółami zakupu
+
+
+

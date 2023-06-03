@@ -23,8 +23,8 @@ bottom3_area = AreaFrame(onFrame=core, row=2, column=2, sticky="n")
 
 # window for login
 logins_window = TopFrame()
-logins_area = AreaFrame(onFrame=logins_window.frame)
 
+logins_area = AreaFrame(onFrame=logins_window.frame)
 # purchase_details_window = TopFrame()
 # purchase_details_area = AreaFrame(onFrame=purchase_details_window.frame)
 
@@ -33,7 +33,7 @@ readFile = ReadData()
 # readFile.file_list[0] json zmienne
 readFile.read_from_file("App_file\zmienne.json", "json")
 # readFile.file_list[0]["Sciezka_portfel"],"txt",
-readFile.read_from_file(readFile.file_list[0]["Sciezka_portfel_test"], "txt")
+readFile.read_from_file(readFile.file_list[0]["Sciezka_portfel"], "txt")
 
 
 def time_now() -> str:
@@ -376,6 +376,7 @@ def purchers_area_ingredients() -> None:
     # treeview with unit price
     unit_price_column = ("Nazwa", "Cena jedn. zł", "Cena jedn. $", "Ilość")
     unit_price_column2 = ["Nazwa", "Cena jedn. zł", "Cena jedn. $", "Ilość"]
+
     purchase_details_area.treeview_display(
         columns=unit_price_column,
         headings_text=unit_price_column2,
@@ -383,9 +384,65 @@ def purchers_area_ingredients() -> None:
         column=0,
         columnspan=6,
     )
+
     purchase_details_area.add_data_in_treeview(
         purchase_details_area.objList[6], purchase_details_data.file_data, "txt"
     )
+
+    def calculate_unit_price() -> list:
+        # Zastanowić się czy nie lepiej żeby zwracał listę/tuple jako odpowiedź
+        result_list = []
+        unique_name = []
+
+        quantity = 0  # ilość
+        for name in purchase_details_data.file_data:
+            if not name[1] in unique_name and name[2] == "Kupno":
+                unique_name.append(name[1])
+                result_list.append([])
+                result_list[unique_name.index(name[1])].extend(
+                    [name[3], name[4], name[5]]
+                )
+            elif name[2] == "Kupno":
+                for i in range(3):
+                    result_list[unique_name.index(name[1])][i] += name[i + 3].__round__(
+                        5
+                    )
+            elif name[2] == "Sprzedaz":
+                for i in range(3):
+                    result_list[unique_name.index(name[1])][i] -= name[i + 3].__round__(
+                        5
+                    )
+
+        for i in range(len(result_list)):
+            if result_list[i][0] < 0:
+                result_list[i][0] = 0
+                result_list[i][1] = 0
+            if result_list[i][2] != 0:
+                pln = (result_list[i][0] / result_list[i][2]).__round__(2)
+                dollar = (result_list[i][1] / result_list[i][2]).__round__(2)
+                result_list[i].extend([pln, dollar])
+
+        output_list = []
+        for i in range(len(result_list)):
+            if result_list[i][2] != 0:
+                output_list.append(
+                    [
+                        unique_name[i],
+                        result_list[i][3],
+                        result_list[i][4],
+                        result_list[i][2],
+                    ]
+                )
+        return output_list
+        # [95.04, 25.56, 0.0579, 1641.45, 441.45]
+        # dane w pliku data, nazwa, kupno/sprzedaz, cena_z, cena_dolar,ilość
+        # pobrać nazwy, cena_złotówki, cena_dolar, ilość,
+
+    purchase_details_area.add_data_in_treeview(
+        purchase_details_area.objList[19], calculate_unit_price()
+    )
+
+    # unit price column and data
 
 
 # bottom 2/3 area in main app
@@ -469,12 +526,13 @@ def result_area_ingredients() -> None:
 
 def main() -> None:
     # For test only
-    # logins_area_ingredients()
+    logins_area_ingredients()
     top_area_ingredients()
     th.Thread(target=middle_area_ingrednients()).start()
     # Wywala mi szerkość treeview headers
     th.Thread(target=chart_area_ingredients()).start()
-    purchers_area_ingredients()
+    # for test only
+    # purchers_area_ingredients()
     buttons_area_ingredients()
     result_area_ingredients()
 

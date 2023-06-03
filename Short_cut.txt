@@ -1,0 +1,8 @@
+wszystkie shortcuts = ctrl+k,ctrl+s
+Zwija wszystkie metody/funckje = ctrl+k,ctrl+0
+Rozwija wszystkie metody/funckje= ctrl+k,ctrl+j
+Usuwanie linii = ctrl+shift+k
+Idź do linii = ctrl+g
+Przejście między kartami alt+number lub alt+strzałka
+Przerzucenie na 2 widok ctrl+alt+strzałka
+
