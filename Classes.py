@@ -411,6 +411,6 @@ class ReadFile:
 
         self.file_data = data
 
-        @property
-        def file_data(self) -> list:
-            return self.file_data
+    @property
+    def file_list(self) -> list:
+        return self.file_data

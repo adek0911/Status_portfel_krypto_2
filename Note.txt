@@ -102,6 +102,14 @@ oraz będzie można analizować nowe inwestycje jak wpływają na wartość akty
 
 
 Plik z szczegółami zakupu
+BOt - generowanie wyników analizy statystycznej wraz z 
+wynikkiem kilku modeli maszynowych wraz z sugestiami inwestycyjnymi.
+ (zrobić to na zewnętrznym serwerze żeby dane było możliwe do 
+ zyskania w którkim czasie lokanie tylko mnożenie wartości portfela)
 
+ Zmianę portfela w głównym oknie aplikacji
+ zrobić bazę na swoich plikach do logowania i stamtąd pobierać dane 
+ stworzyć możliwość tworzenia analiz np. ile zaiwestować by wyjść na na zero
+  albo jaka cena jest potrzebna by uzysać zysk
 
 
