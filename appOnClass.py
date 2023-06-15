@@ -34,7 +34,6 @@ readFile = ReadData()
 # readFile.file_list[0] json zmienne
 readFile.read_from_file("App_file\zmienne.json", "json")
 # readFile.file_list[0]["Sciezka_portfel"],"txt",
-readFile.read_from_file(readFile.file_list[0]["Sciezka_portfel"], "txt")
 
 
 def time_now() -> str:
@@ -59,6 +58,7 @@ def price_wallet(wallet: list) -> list:
                     last_time,
                 )
                 file.seek(0, 0)
+                file.truncate()
                 json.dump(read_file, file, ensure_ascii=False, indent=4)
 
     pre_url = '","'.join(
@@ -73,7 +73,6 @@ def price_wallet(wallet: list) -> list:
             f'https://api.binance.com/api/v3/ticker/price?symbols=["{pre_url}"]'
         )
     ).json()
-
     prices = {i["symbol"]: float(i["price"]).__round__(4) for i in url}
     invest_val = 0
     val_of_wallet_pln = 0
@@ -127,13 +126,59 @@ def price_wallet(wallet: list) -> list:
     return kryptoListFromWallet
 
 
-def button_change_time() -> None:
+def refresh_result_data():
+    for i in range(2, 11, 2):
+        bottom3_area.objList[i]["state"] = "normal"
+        bottom3_area.objList[i].delete(0, "end")
+        if i == 2:
+            bottom3_area.objList[i].insert(0, readFile.result_values["Profit_zl"])
+        elif i == 4:
+            bottom3_area.objList[i].insert(0, readFile.result_values["Profit_dollar"])
+        elif i == 6:
+            bottom3_area.objList[i].insert(0, f'{readFile.result_values["Profit_%"]} %')
+        elif i == 8:
+            bottom3_area.objList[i].insert(0, readFile.result_values["Value_of_wallet"])
+        elif i == 10:
+            bottom3_area.objList[i].insert(0, readFile.result_values["Invest_value"])
+
+        bottom3_area.objList[i]["state"] = "readonly"
+
+
+def button_refresh_prices() -> None:
     top_area.objList[2].configure(text=f"Status na dzień: {time_now()}")
     th.Thread(
         target=middle_area.add_data_in_treeview(
             middle_area.objList[1], price_wallet(readFile.file_list[1])
         )
     ).start()
+
+    refresh_result_data()
+
+
+# funkcja będzie czyścić tabele portfel oraz ustawiać ją
+# zależnie od wybranej warotści
+def refresh_wallet(event):
+    # czyszczenie tabeli portfel
+
+    # wprowadzenie wartości do tabeli portfel
+    with open(f"Dane\{top_area.objList[1].get()}.txt", "r") as file:
+        data = file.read().splitlines()
+    for i in range(len(data)):
+        data[i] = data[i].split(",")
+    readFile.read_from_file(f"Dane\{top_area.objList[1].get()}.txt", "txt")
+
+    middle_area.add_data_in_treeview(middle_area.objList[0], data, "txt")
+    th.Thread(
+        target=middle_area.add_data_in_treeview(
+            middle_area.objList[1], price_wallet(data)
+        )
+    ).start()
+
+    # aktywowanie wyliczeń wartości na nowych danych
+    refresh_result_data()
+    # aktualizacja wykresów
+
+    pass
 
 
 # Top area in main app
@@ -144,9 +189,11 @@ def top_area_ingredients() -> None:
         tmp = json.load(file)
         wallet_lists = tmp["Admin"]  # temporary
     top_area.text_display(f"Wybierz portfel:", row=0, column=0, padx=5)
+
     top_area.combobox_display(
         values=wallet_lists, width=12, row=0, column=1, padx=15, pady=10
     )
+    top_area.objList[1].bind("<<ComboboxSelected>>", refresh_wallet)
     top_area.text_display(
         f"Status na dzień: {time_now()}",
         row=0,
@@ -165,7 +212,7 @@ def top_area_ingredients() -> None:
         "Odśwież",
         row=0,
         column=4,
-        command=button_change_time,
+        command=button_refresh_prices,
         padx=5,
         pady=5,
     )
@@ -239,6 +286,8 @@ def middle_area_ingrednients() -> None:
     middle_area.treeview_display(
         columns=column_tuple_walet, headings_text=headings_list_walet, row=1, column=0
     )
+
+    readFile.read_from_file(f"Dane\{top_area.objList[1].get()}.txt", "txt")
 
     middle_area.add_data_in_treeview(
         middle_area.objList[0], readFile.file_list[1], "txt"

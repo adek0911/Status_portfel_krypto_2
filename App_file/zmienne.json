@@ -8,7 +8,7 @@
     "Sciezka_portfel_test": "Dane\\Portfel_test.txt",
     "Sciezka_Szczegoly_zakupow": "Dane\\Szczegoly_zakupow_org.txt",
     "Sciezka_Dane_wykres": "App_file\\Dane_wykresy.csv",
-    "Charts_data": "2023-06-03",
+    "Charts_data": "2023-06-15",
     "Sciezka_Dane_old": "App_file\\Old_v.csv",
     "URL_krypto_price": "https://api.binance.com/api/v3/ticker/price?symbol=",
     "URL_krypto_price2": "https://api.binance.com/api/v3/ticker/price?symbols=",

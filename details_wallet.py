@@ -143,7 +143,7 @@ def purchers_area_ingredients(choice_wallet: str) -> None:
             columnspan=6,
         )
         purchase_details_area.add_data_in_treeview(
-            purchase_details_area.objList[6], purchase_details_data.file_data, "txt"
+            purchase_details_area.objList[6], purchase_details_data.file_list, "txt"
         )
 
         purchase_details_area.add_data_in_treeview(
