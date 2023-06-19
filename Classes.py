@@ -144,22 +144,25 @@ class AreaFrame:
     @staticmethod
     def choice_portfel(objkey: ttk.Treeview, objkey2: ttk.Treeview):
         get_children1 = objkey.get_children()
-        index_1 = get_children1.index(objkey.focus())
-        if objkey2.focus() == "":
-            index_2 = index_1
-            focus_selection = objkey2.get_children()[index_1]
-            objkey2.selection_set(focus_selection)
-            objkey2.focus(focus_selection)
-        else:
-            index_2 = objkey2.get_children().index(objkey2.focus())
+        status = True
+        try:
+            index_1 = get_children1.index(objkey.focus())
+        except ValueError:
+            status = False
+        if status:
+            if objkey2.focus() == "":
+                index_2 = index_1
+                focus_selection = objkey2.get_children()[index_1]
+                objkey2.selection_set(focus_selection)
+                objkey2.focus(focus_selection)
+            else:
+                index_2 = objkey2.get_children().index(objkey2.focus())
 
-        if index_1 != index_2:
-            focus_selection = objkey2.get_children()[index_1]
-            objkey2.selection_set(focus_selection)
-            objkey2.focus(focus_selection)
+            if index_1 != index_2:
+                focus_selection = objkey2.get_children()[index_1]
+                objkey2.selection_set(focus_selection)
+                objkey2.focus(focus_selection)
 
-    # def __getitem__(self, key):
-    #     return self.treeview[key]
     def combobox_display(
         self, values: list, width: int, row: int, column: int, **kwargs
     ):
@@ -204,10 +207,12 @@ class AreaFrame:
                                 writer = csv.writer(d_wykres)
                                 writer.writerows(result)
                         if url.status_code != 200:
+                            print("Brak danych ze strony")
                             if not i in jsonFile["Charts_no_krypto_data"]:
                                 jsonFile["Charts_no_krypto_data"].append(i)
                     jsonFile["Charts_data"] = today
                     file.seek(0, 0)
+                    file.truncate()
                     json.dump(jsonFile, file, ensure_ascii=False, indent=4)
 
         plt.style.use("seaborn-v0_8-darkgrid")
@@ -326,7 +331,7 @@ class AreaFrame:
             # Nie było jeszcze sprawdzane
             except FileNotFoundError:
                 msgbox.INFO("Nie ma pliku o takiej nazwie")
-                print("Nie ma pliku o takiej nazwie")
+                # print("Nie ma pliku o takiej nazwie")
 
             chart_frame.grid(row=0, column=0)
 
@@ -391,12 +396,6 @@ class ReadData:
                 flatFile[i] = flatFile[i].split(",")
             self.file_list.append(flatFile)
             # return self.flatFile
-
-    # def __getitem__(self, key):
-    #     return self.walet_data[key]
-
-    # def __len__(self):
-    #     return len(self.walet_data)
 
 
 class ReadFile:
