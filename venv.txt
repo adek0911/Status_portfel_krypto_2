@@ -1,0 +1,2 @@
+Jak stworzyć venv do aplikacji:
+Stwórz venv skopiuj biblioteki z poprzedniej wersji pobranej 
