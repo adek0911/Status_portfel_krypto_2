@@ -1,2 +1,11 @@
 Jak stworzyć venv do aplikacji:
 Stwórz venv skopiuj biblioteki z poprzedniej wersji pobranej 
+
+commendy do stworzenia venv, zainalowanie odpowiednich bibliotek oraz zapisu w folderze projektu
+
+Otwórz konsole python wejdz do folderu aplikacji wprowadz commendę:
+python -m venv .venv
+
+
+Command do instalacji pakietów z wymagań
+pip3 install -r requirements.txt

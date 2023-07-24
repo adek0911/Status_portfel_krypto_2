@@ -395,6 +395,12 @@ from ttkbootstrap.scrolled import ScrolledFrame
 # # for i in range(len(d_data)):
 # #      d_data[i][0]=d_data[i][0]
 
-url = requests.get(f"https://www.cryptodatadownload.com/cdd/Binance_BTCUSDT_d.csv")
-tmp = url.text.split("\n", 100)[:10]
-print(tmp)
+# url = requests.get(f"https://www.cryptodatadownload.com/cdd/Binance_BTCUSDT_d.csv")
+# tmp = url.text.split("\n", 100)[:10]
+# print(tmp)
+
+Test_group = ["Test1", "Test2", "Test3"]
+
+# filter(function, list)
+a = sorted(Test_group)
+print(a)

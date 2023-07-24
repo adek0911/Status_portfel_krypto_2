@@ -8,7 +8,13 @@ from Classes import AreaFrame, ReadData, TopFrame, ReadFile
 from details_wallet import purchers_area_ingredients
 
 root = ttk.Window(themename="darkly")
-root.style.configure(".", bordercolor="", borderwidth=0, font=("Helvetica", 9))
+# before
+# root.style.configure(".", bordercolor="", borderwidth=0, font=("Helvetica", 9))
+
+root.style.configure(".", bordercolor="", borderwidth=0, font=("Helvetica", 10))
+root.style.configure(
+    "11_label.TLabel", bordercolor="", borderwidth=0, font=("Helvetica", 11)
+)
 root.style.configure("primary.Treeview", rowheight=22, borderwidth=0)
 root.style.configure("primary.TEntry", font=("Helvetica", 12))
 root.style.configure("primary.TButton", font=("Helvetica", 11), buttonuprelief="")
@@ -16,7 +22,7 @@ root.style.configure("Treeview.Heading", font=("Helvetica", 11))
 root.style.configure("12_label.TLabel", font=("Helvetica", 12))
 core = ttk.Frame(root)
 core.grid()
-top_area = AreaFrame(onFrame=core, row=0, column=0, columnspan=4, sticky="ew")
+top_area = AreaFrame(onFrame=core, row=0, column=0, columnspan=4, sticky="ew", padx=5)
 middle_area = AreaFrame(onFrame=core, row=1, column=0, columnspan=4)
 bottom1_area = AreaFrame(onFrame=core, row=2, column=0, sticky="w")
 bottom2_area = AreaFrame(onFrame=core, row=2, column=1, sticky="n")
@@ -32,8 +38,10 @@ logins_area = AreaFrame(onFrame=logins_window.frame)
 # Trzeba to rozbić by każdy obiekt zawierał inne pobrane dane
 readFile = ReadData()
 # readFile.file_list[0] json zmienne
-readFile.read_from_file("App_file\zmienne.json", "json")
+readFile.read_from_file("App_file\zmienne.json", "json", "json_zmienne")
 # readFile.file_list[0]["Sciezka_portfel"],"txt",
+
+global user_login
 
 
 def time_now() -> str:
@@ -65,7 +73,7 @@ def price_wallet(wallet: list) -> list:
         [
             f"{i[0]}USDT"
             for i in wallet
-            if i[0] not in readFile.file_list[0]["Charts_no_krypto_data"]
+            if i[0] not in readFile.file_dict["json_zmienne"]["Charts_no_krypto_data"]
         ]
     )
     url = (
@@ -84,7 +92,7 @@ def price_wallet(wallet: list) -> list:
             download_price = prices[wallet[i][0] + "USDT"]
         except KeyError:
             if wallet[i][0] == "ARI10":
-                download_price = readFile.file_list[0]["Cena_ARI10"]
+                download_price = readFile.file_dict["json_zmienne"]["Cena_ARI10"]
             else:
                 download_price = 0
 
@@ -132,13 +140,13 @@ def refresh_result_data():
         bottom3_area.objList[i].delete(0, "end")
         if i == 2:
             bottom3_area.objList[i].insert(0, readFile.result_values["Profit_zl"])
-        elif i == 4:
+        if i == 4:
             bottom3_area.objList[i].insert(0, readFile.result_values["Profit_dollar"])
-        elif i == 6:
+        if i == 6:
             bottom3_area.objList[i].insert(0, f'{readFile.result_values["Profit_%"]} %')
-        elif i == 8:
+        if i == 8:
             bottom3_area.objList[i].insert(0, readFile.result_values["Value_of_wallet"])
-        elif i == 10:
+        if i == 10:
             bottom3_area.objList[i].insert(0, readFile.result_values["Invest_value"])
 
         bottom3_area.objList[i]["state"] = "readonly"
@@ -148,11 +156,19 @@ def button_refresh_prices() -> None:
     top_area.objList[2].configure(text=f"Status na dzień: {time_now()}")
     th.Thread(
         target=middle_area.add_data_in_treeview(
-            middle_area.objList[1], price_wallet(readFile.file_list[1])
+            middle_area.objList[1], price_wallet(readFile.file_dict["wallet_data"])
         )
     ).start()
 
     refresh_result_data()
+
+
+def refresh_charts_data():
+    for widgets in bottom1_area.frame.winfo_children():
+        widgets.destroy()
+
+    chart_area_ingredients()
+    pass
 
 
 # funkcja będzie czyścić tabele portfel oraz ustawiać ją
@@ -161,11 +177,13 @@ def refresh_wallet(event):
     # czyszczenie tabeli portfel
 
     # wprowadzenie wartości do tabeli portfel
-    with open(f"Dane\{top_area.objList[1].get()}.txt", "r") as file:
+    with open(f"Dane\{top_area.dict_combo['wallet_list'].get()}.txt", "r") as file:
         data = file.read().splitlines()
     for i in range(len(data)):
         data[i] = data[i].split(",")
-    readFile.read_from_file(f"Dane\{top_area.objList[1].get()}.txt", "txt")
+    readFile.read_from_file(
+        f"Dane\{top_area.dict_combo['wallet_list'].get()}.txt", "txt", "wallet_data"
+    )
 
     middle_area.add_data_in_treeview(middle_area.objList[0], data, "txt")
     th.Thread(
@@ -177,36 +195,47 @@ def refresh_wallet(event):
     # aktywowanie wyliczeń wartości na nowych danych
     refresh_result_data()
     # aktualizacja wykresów
-
-    pass
+    th.Thread(target=refresh_charts_data).start()
 
 
 # Top area in main app
 def top_area_ingredients() -> None:
     """List of wallets, current data and button with refresh corrent value of invest"""
     # wallet_lists = ["Portfel1"]
+    global user_login
     with open("App_file\Wallets.json", "r") as file:
         tmp = json.load(file)
-        wallet_lists = tmp["Admin"]  # temporary
-    top_area.text_display(f"Wybierz portfel:", row=0, column=0, padx=5)
+        wallet_lists = tmp[f"{user_login}"]  # temporary
+    top_area.text_display(
+        f"Wybierz portfel:", row=0, column=0, padx=5, style="11_label.TLabel"
+    )
 
     top_area.combobox_display(
-        values=wallet_lists, width=12, row=0, column=1, padx=15, pady=10
+        values=wallet_lists,
+        width=12,
+        row=0,
+        column=1,
+        padx=15,
+        pady=10,
+        name="wallet_list",
     )
-    top_area.objList[1].bind("<<ComboboxSelected>>", refresh_wallet)
+    top_area.dict_combo["wallet_list"].bind("<<ComboboxSelected>>", refresh_wallet)
     top_area.text_display(
         f"Status na dzień: {time_now()}",
         row=0,
         column=2,
-        padx=30,
+        # was padx=95
+        # padx=30, before
+        padx=95,
         style="12_label.TLabel",
-    )  # was padx=95
+    )
     top_area.text_display(
         f"Odśwież wyliczenia portfela: ",
         row=0,
         column=3,
         sticky="e",
         padx=5,
+        style="11_label.TLabel",
     )
     top_area.button_display(
         "Odśwież",
@@ -219,9 +248,11 @@ def top_area_ingredients() -> None:
 
 
 def check_logins(login, password) -> None:
+    global user_login
     with open("App_file\credentials.json", "r") as file:
         logins_dict = json.load(file)
     if login in logins_dict and password == logins_dict[login]:
+        user_login = login
         root.deiconify()
         logins_window.frame.destroy()
     else:
@@ -244,6 +275,7 @@ def logins_area_ingredients() -> None:
         row=0,
         column=0,
         columnspan=2,
+        style="11_label.TLabel",
         padx=15,
     )
     logins_area.text_display(text="Login: ", row=1, column=0)
@@ -287,10 +319,12 @@ def middle_area_ingrednients() -> None:
         columns=column_tuple_walet, headings_text=headings_list_walet, row=1, column=0
     )
 
-    readFile.read_from_file(f"Dane\{top_area.objList[1].get()}.txt", "txt")
+    readFile.read_from_file(
+        f"Dane\{top_area.dict_combo['wallet_list'].get()}.txt", "txt", "wallet_data"
+    )
 
     middle_area.add_data_in_treeview(
-        middle_area.objList[0], readFile.file_list[1], "txt"
+        middle_area.objList[0], readFile.file_dict["wallet_data"], "txt"
     )
 
     column_tuple_price = (
@@ -316,7 +350,7 @@ def middle_area_ingrednients() -> None:
     )
     th.Thread(
         target=middle_area.add_data_in_treeview(
-            middle_area.objList[1], price_wallet(readFile.file_list[1])
+            middle_area.objList[1], price_wallet(readFile.file_dict["wallet_data"])
         )
     ).start()
 
@@ -336,12 +370,15 @@ def middle_area_ingrednients() -> None:
 def chart_area_ingredients() -> None:
     """Charts with data"""
     bottom1_area.text_display(
-        "Wybierz krypto do wyświetlania wykresu:", row=0, column=0
+        "Wybierz krypto do wyświetlania wykresu:",
+        row=0,
+        column=0,
+        style="11_label.TLabel",
     )
     krypto_wallet_list = [
         i[0]
-        for i in readFile.file_list[1]
-        if i[0] not in readFile.file_list[0]["Charts_no_krypto_data"]
+        for i in readFile.file_dict["wallet_data"]
+        if i[0] not in readFile.file_dict["json_zmienne"]["Charts_no_krypto_data"]
     ]
     bottom1_area.combobox_display(
         values=krypto_wallet_list,
@@ -349,6 +386,7 @@ def chart_area_ingredients() -> None:
         column=1,
         width=10,
         pady=5,
+        name="available_crypto",
     )
     bottom1_area.chart(krypto_wallet_list)
 
@@ -388,7 +426,13 @@ def result_area_ingredients() -> None:
         columnspan=2,
         style="12_label.TLabel",
     )
-    bottom3_area.text_display(text="Ogólny Zysk/Strata zł wynosi: ", row=1, column=0)
+    bottom3_area.text_display(
+        text="Ogólny Zysk/Strata zł wynosi: ",
+        row=1,
+        column=0,
+        pady=15,
+        style="11_label.TLabel",
+    )
     bottom3_area.entry_display(
         result_value=readFile.result_values["Profit_zl"],
         state="readonly",
@@ -396,7 +440,13 @@ def result_area_ingredients() -> None:
         column=1,
         insert=True,
     )
-    bottom3_area.text_display(text="Ogólny Zysk/Strata $ wynosi: ", row=2, column=0)
+    bottom3_area.text_display(
+        text="Ogólny Zysk/Strata $ wynosi: ",
+        row=2,
+        column=0,
+        pady=15,
+        style="11_label.TLabel",
+    )
     bottom3_area.entry_display(
         result_value=readFile.result_values["Profit_dollar"],
         state="readonly",
@@ -404,7 +454,13 @@ def result_area_ingredients() -> None:
         column=1,
         insert=True,
     )
-    bottom3_area.text_display(text="Ogólny Zysk/Strata % wynosi: ", row=3, column=0)
+    bottom3_area.text_display(
+        text="Ogólny Zysk/Strata % wynosi: ",
+        row=3,
+        column=0,
+        pady=15,
+        style="11_label.TLabel",
+    )
     bottom3_area.entry_display(
         result_value=readFile.result_values["Profit_%"],
         state="readonly",
@@ -413,7 +469,13 @@ def result_area_ingredients() -> None:
         column=1,
         insert=True,
     )
-    bottom3_area.text_display(text="Wartość portfela w zł wynosi: ", row=4, column=0)
+    bottom3_area.text_display(
+        text="Wartość portfela w zł wynosi: ",
+        row=4,
+        column=0,
+        pady=15,
+        style="11_label.TLabel",
+    )
     bottom3_area.entry_display(
         result_value=readFile.result_values["Value_of_wallet"],
         state="readonly",
@@ -421,7 +483,13 @@ def result_area_ingredients() -> None:
         column=1,
         insert=True,
     )
-    bottom3_area.text_display(text="Wartość zaiwestowana wynosi: ", row=5, column=0)
+    bottom3_area.text_display(
+        text="Wartość zaiwestowana wynosi: ",
+        row=5,
+        column=0,
+        pady=15,
+        style="11_label.TLabel",
+    )
     bottom3_area.entry_display(
         width=10,
         result_value=readFile.result_values["Invest_value"],
