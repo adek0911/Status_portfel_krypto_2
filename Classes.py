@@ -16,6 +16,9 @@ import tkinter.messagebox as msgbox
 class AreaFrame:
     def __init__(self, height=100, width=100, onFrame=ttk.Frame, **kwargs) -> None:
         self.objList = []
+        # sprawdzić może wykorzystać
+        # self.__dict__={}
+        self.dict_combo = {}
         self.height = height
         self.width = width
         self.frame = ttk.Frame(onFrame, width=self.width, height=self.height)
@@ -33,17 +36,16 @@ class AreaFrame:
         rowspan=None,
         columnspan=None,
         style="TLabel",
+        pady=5,
         **kwargs,
     ):
-        label = ttk.Label(
-            self.frame, text=text, style=style
-        )  # , font=("Helvetica", 12)
+        label = ttk.Label(self.frame, text=text, style=style)
         label.grid(
             row=row,
             column=column,
             rowspan=rowspan,
             columnspan=columnspan,
-            pady=5,
+            pady=pady,
             **kwargs,
         )
         self.objList.append(label)
@@ -164,7 +166,7 @@ class AreaFrame:
                 objkey2.focus(focus_selection)
 
     def combobox_display(
-        self, values: list, width: int, row: int, column: int, **kwargs
+        self, values: list, width: int, row: int, column: int, name: str, **kwargs
     ):
         combobox = ttk.Combobox(
             self.frame,
@@ -175,7 +177,8 @@ class AreaFrame:
         )
         combobox.grid(row=row, column=column, **kwargs)
         combobox.current(0)
-        self.objList.append(combobox)
+        # self.objList.append(combobox)
+        self.dict_combo[f"{name}"] = combobox
 
     # Przerobić na statyczną metode
     def chart(self, krypto_list: list):
@@ -236,7 +239,7 @@ class AreaFrame:
 
         def selected_combobox(event):
             update_charts_data(krypto_list)
-            choice = self.objList[1].get()
+            choice = self.dict_combo["available_crypto"].get()
             try:
                 with open(
                     f"Chart_file\\{choice}_chartdata.csv", "r", encoding="UTF-8"
@@ -258,9 +261,14 @@ class AreaFrame:
                     pass
 
                 for j in range(3):
+                    # chart on resolution of laptop ?check scaling %
+                    # wykres = plt.Figure(
+                    #     figsize=(3.2, 0.5), dpi=100, facecolor=(0.18, 0.31, 0.31)
+                    # )
+                    # chart on resolution of PC ? check scaling  form pix to %
                     wykres = plt.Figure(
-                        figsize=(3.2, 0.5), dpi=100, facecolor=(0.18, 0.31, 0.31)
-                    )  # figsize=(4.2, 1.6),
+                        figsize=(4.2, 1.6), dpi=100, facecolor=(0.18, 0.31, 0.31)
+                    )
                     chart_list = [[], []]
                     for i in d_data:
                         if j == 0 and i[0] > data_range[0]:
@@ -286,8 +294,13 @@ class AreaFrame:
                     def conf_plot(j, text):
                         ax1.set_xticks(chart_list[0][::j])
                         # ax1.set_title(text, color="white", loc="left")
+
+                        # before laptop
+                        # ax1.set_title(
+                        #     text, color="white", loc="left", x=-0.13, fontsize=11
+                        # )
                         ax1.set_title(
-                            text, color="white", loc="left", x=-0.13, fontsize=11
+                            text, color="white", loc="left", x=-0.13, fontsize=12
                         )
                         ax1.hlines(
                             mean(),
@@ -335,8 +348,10 @@ class AreaFrame:
 
             chart_frame.grid(row=0, column=0)
 
-        self.objList[1].current(0)
-        self.objList[1].bind("<<ComboboxSelected>>", selected_combobox)
+        self.dict_combo["available_crypto"].current(0)
+        self.dict_combo["available_crypto"].bind(
+            "<<ComboboxSelected>>", selected_combobox
+        )
 
         selected_combobox(None)
 
@@ -373,7 +388,7 @@ class ReadData:
     """Create list with file objects"""
 
     def __init__(self) -> None:
-        self.file_list = []
+        self.file_dict = {}
         self.result_values = {
             "Profit_zl": 0,
             "Profit_dollar": 0,
@@ -382,20 +397,19 @@ class ReadData:
             "Invest_value": 0,
         }
 
-    def read_from_file(self, variableFilePath: str, typefile: str):
+    def read_from_file(self, variableFilePath: str, typefile: str, data_name: str):
         """Give path to file and file extension"""
         if typefile == "json":
             with open(variableFilePath, "r") as file:
                 jsonFile = json.load(file)
-                self.file_list.append(jsonFile)
+                self.file_dict[f"{data_name}"] = jsonFile
 
-        elif typefile == "txt" or typefile == "csv":
+        if typefile == "txt" or typefile == "csv":
             with open(variableFilePath, "r") as file:
                 flatFile = file.read().splitlines()
             for i in range(len(flatFile)):
                 flatFile[i] = flatFile[i].split(",")
-            self.file_list.append(flatFile)
-            # return self.flatFile
+            self.file_dict[f"{data_name}"] = flatFile
 
 
 class ReadFile:

@@ -113,3 +113,9 @@ wynikkiem kilku modeli maszynowych wraz z sugestiami inwestycyjnymi.
   albo jaka cena jest potrzebna by uzysać zysk
 
 
+Wymyślić gdzie przechowywać dane do wykresów
+Stworzyć listę dostępnych walut zamiast nie dostępnych, pobrać listę możliwych
+    przekształcić ją i zapisac i jeżeli znajdzie taką pobrać odpowiednie informacje tylko 
+    z danego portfela
+    
+    
