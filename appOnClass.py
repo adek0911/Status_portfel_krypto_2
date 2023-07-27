@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 import json
 import ttkbootstrap as ttk
 import requests
@@ -73,7 +74,7 @@ def price_wallet(wallet: list) -> list:
         [
             f"{i[0]}USDT"
             for i in wallet
-            if i[0] not in readFile.file_dict["json_zmienne"]["Charts_no_krypto_data"]
+            if i[0] in readFile.file_dict["json_zmienne"]["available_charts_data"]
         ]
     )
     url = (
@@ -378,7 +379,7 @@ def chart_area_ingredients() -> None:
     krypto_wallet_list = [
         i[0]
         for i in readFile.file_dict["wallet_data"]
-        if i[0] not in readFile.file_dict["json_zmienne"]["Charts_no_krypto_data"]
+        if i[0] in readFile.file_dict["json_zmienne"]["available_charts_data"]
     ]
     bottom1_area.combobox_display(
         values=krypto_wallet_list,
@@ -388,7 +389,8 @@ def chart_area_ingredients() -> None:
         pady=5,
         name="available_crypto",
     )
-    bottom1_area.chart(krypto_wallet_list)
+    # bottom1_area.chart(krypto_wallet_list)
+    bottom1_area.chart_v2(krypto_wallet_list,readFile.file_dict["json_zmienne"]["Charts_data"])
 
 
 # bottom 2/3 area in main app

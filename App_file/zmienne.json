@@ -15,9 +15,14 @@
     "URL_wykres_data": "https://www.cryptodatadownload.com/cdd/Binance_{i}_1h.csv",
     "Cena_Dolar": 4.3,
     "Cena_ARI10": 0.0064,
-    "Charts_no_krypto_data": [
-        "ARI10"
-    ],
-    "Charts_enable_krypto": [],
-    "czas_refresh": 5
+    "available_charts_data": [
+        "ADA",
+        "BCH",
+        "BTC",
+        "DOGE",
+        "ETH",
+        "LRC",
+        "LTC",
+        "XRP"
+    ]
 }
