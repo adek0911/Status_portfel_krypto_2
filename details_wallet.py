@@ -94,13 +94,28 @@ def purchers_area_ingredients(choice_wallet: str) -> None:
         purchase_details_zakup_filtr = update_filtr(2)
 
         purchase_details_area.combobox_display(
-            values=purchase_details_data_filtr, width=10, row=1, column=0, columnspan=2
+            values=purchase_details_data_filtr,
+            width=10,
+            row=1,
+            column=0,
+            columnspan=2,
+            name="data_filtr",
         )
         purchase_details_area.combobox_display(
-            values=purchase_details_nazwa_filtr, width=10, row=1, column=2, columnspan=2
+            values=purchase_details_nazwa_filtr,
+            width=10,
+            row=1,
+            column=2,
+            columnspan=2,
+            name="name_filtr",
         )
         purchase_details_area.combobox_display(
-            values=purchase_details_zakup_filtr, width=10, row=1, column=4, columnspan=2
+            values=purchase_details_zakup_filtr,
+            width=10,
+            row=1,
+            column=4,
+            columnspan=2,
+            name="choice_filtr",
         )
         tree_view_headers = [
             "Data",
@@ -117,9 +132,9 @@ def purchers_area_ingredients(choice_wallet: str) -> None:
             row=2,
             column=0,
             columnspan=6,
-            width=100,
+            # width=100,
         )
-        # purchase_details_area.objList[6].heading("#0", text="\n")
+        purchase_details_area.objList[3].heading("#0", text="\n")
         # add data from file , create new instant and download data
 
         # 6 entry
@@ -144,11 +159,11 @@ def purchers_area_ingredients(choice_wallet: str) -> None:
         )
 
         purchase_details_area.add_data_in_treeview(
-            purchase_details_area.objList[6], purchase_details_data.file_list, "txt"
+            purchase_details_area.objList[3], purchase_details_data.file_list, "txt"
         )
 
         purchase_details_area.add_data_in_treeview(
-            purchase_details_area.objList[19], calculate_unit_price()
+            purchase_details_area.objList[16], calculate_unit_price()
         )
 
     # unit price column and data

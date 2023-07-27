@@ -37,9 +37,9 @@ logins_area = AreaFrame(onFrame=logins_window.frame)
 # purchase_details_area = AreaFrame(onFrame=purchase_details_window.frame)
 
 # Trzeba to rozbić by każdy obiekt zawierał inne pobrane dane
-readFile = ReadData()
+variable_json_File = ReadData()
 # readFile.file_list[0] json zmienne
-readFile.read_from_file("App_file\zmienne.json", "json", "json_zmienne")
+variable_json_File.read_from_file("App_file\zmienne.json", "json", "variable_json")
 # readFile.file_list[0]["Sciezka_portfel"],"txt",
 
 global user_login
@@ -74,7 +74,8 @@ def price_wallet(wallet: list) -> list:
         [
             f"{i[0]}USDT"
             for i in wallet
-            if i[0] in readFile.file_dict["json_zmienne"]["available_charts_data"]
+            if i[0]
+            in variable_json_File.file_dict["variable_json"]["available_charts_data"]
         ]
     )
     url = (
@@ -93,7 +94,9 @@ def price_wallet(wallet: list) -> list:
             download_price = prices[wallet[i][0] + "USDT"]
         except KeyError:
             if wallet[i][0] == "ARI10":
-                download_price = readFile.file_dict["json_zmienne"]["Cena_ARI10"]
+                download_price = variable_json_File.file_dict["variable_json"][
+                    "Cena_ARI10"
+                ]
             else:
                 download_price = 0
 
@@ -125,13 +128,13 @@ def price_wallet(wallet: list) -> list:
                 count_percent(),
             ]
         )
-    readFile.result_values["Profit_zl"] = Profit_zl.__round__(2)
-    readFile.result_values["Profit_dollar"] = Profit_dollar.__round__(2)
-    readFile.result_values["Profit_%"] = (
+    variable_json_File.result_values["Profit_zl"] = Profit_zl.__round__(2)
+    variable_json_File.result_values["Profit_dollar"] = Profit_dollar.__round__(2)
+    variable_json_File.result_values["Profit_%"] = (
         (Profit_zl * 100) / val_of_wallet_pln.__round__(2)
     ).__round__(2)
-    readFile.result_values["Value_of_wallet"] = val_of_wallet_pln.__round__(2)
-    readFile.result_values["Invest_value"] = invest_val.__round__(2)
+    variable_json_File.result_values["Value_of_wallet"] = val_of_wallet_pln.__round__(2)
+    variable_json_File.result_values["Invest_value"] = invest_val.__round__(2)
     return kryptoListFromWallet
 
 
@@ -140,15 +143,25 @@ def refresh_result_data():
         bottom3_area.objList[i]["state"] = "normal"
         bottom3_area.objList[i].delete(0, "end")
         if i == 2:
-            bottom3_area.objList[i].insert(0, readFile.result_values["Profit_zl"])
+            bottom3_area.objList[i].insert(
+                0, variable_json_File.result_values["Profit_zl"]
+            )
         if i == 4:
-            bottom3_area.objList[i].insert(0, readFile.result_values["Profit_dollar"])
+            bottom3_area.objList[i].insert(
+                0, variable_json_File.result_values["Profit_dollar"]
+            )
         if i == 6:
-            bottom3_area.objList[i].insert(0, f'{readFile.result_values["Profit_%"]} %')
+            bottom3_area.objList[i].insert(
+                0, f'{variable_json_File.result_values["Profit_%"]} %'
+            )
         if i == 8:
-            bottom3_area.objList[i].insert(0, readFile.result_values["Value_of_wallet"])
+            bottom3_area.objList[i].insert(
+                0, variable_json_File.result_values["Value_of_wallet"]
+            )
         if i == 10:
-            bottom3_area.objList[i].insert(0, readFile.result_values["Invest_value"])
+            bottom3_area.objList[i].insert(
+                0, variable_json_File.result_values["Invest_value"]
+            )
 
         bottom3_area.objList[i]["state"] = "readonly"
 
@@ -157,7 +170,8 @@ def button_refresh_prices() -> None:
     top_area.objList[2].configure(text=f"Status na dzień: {time_now()}")
     th.Thread(
         target=middle_area.add_data_in_treeview(
-            middle_area.objList[1], price_wallet(readFile.file_dict["wallet_data"])
+            middle_area.objList[1],
+            price_wallet(variable_json_File.file_dict["wallet_data"]),
         )
     ).start()
 
@@ -182,7 +196,7 @@ def refresh_wallet(event):
         data = file.read().splitlines()
     for i in range(len(data)):
         data[i] = data[i].split(",")
-    readFile.read_from_file(
+    variable_json_File.read_from_file(
         f"Dane\{top_area.dict_combo['wallet_list'].get()}.txt", "txt", "wallet_data"
     )
 
@@ -320,12 +334,12 @@ def middle_area_ingrednients() -> None:
         columns=column_tuple_walet, headings_text=headings_list_walet, row=1, column=0
     )
 
-    readFile.read_from_file(
+    variable_json_File.read_from_file(
         f"Dane\{top_area.dict_combo['wallet_list'].get()}.txt", "txt", "wallet_data"
     )
 
     middle_area.add_data_in_treeview(
-        middle_area.objList[0], readFile.file_dict["wallet_data"], "txt"
+        middle_area.objList[0], variable_json_File.file_dict["wallet_data"], "txt"
     )
 
     column_tuple_price = (
@@ -351,7 +365,8 @@ def middle_area_ingrednients() -> None:
     )
     th.Thread(
         target=middle_area.add_data_in_treeview(
-            middle_area.objList[1], price_wallet(readFile.file_dict["wallet_data"])
+            middle_area.objList[1],
+            price_wallet(variable_json_File.file_dict["wallet_data"]),
         )
     ).start()
 
@@ -378,8 +393,9 @@ def chart_area_ingredients() -> None:
     )
     krypto_wallet_list = [
         i[0]
-        for i in readFile.file_dict["wallet_data"]
-        if i[0] in readFile.file_dict["json_zmienne"]["available_charts_data"]
+        for i in variable_json_File.file_dict["wallet_data"]
+        if i[0]
+        in variable_json_File.file_dict["variable_json"]["available_charts_data"]
     ]
     bottom1_area.combobox_display(
         values=krypto_wallet_list,
@@ -389,8 +405,10 @@ def chart_area_ingredients() -> None:
         pady=5,
         name="available_crypto",
     )
+    # old version
     # bottom1_area.chart(krypto_wallet_list)
-    bottom1_area.chart_v2(krypto_wallet_list,readFile.file_dict["json_zmienne"]["Charts_data"])
+
+    bottom1_area.chart_v2(krypto_wallet_list, variable_json_File)
 
 
 # bottom 2/3 area in main app
@@ -403,7 +421,10 @@ def buttons_area_ingredients() -> None:
         padx=5,
         pady=15,
         width=18,
-        command=lambda: purchers_area_ingredients(top_area.objList[1].get()),
+        command=lambda: purchers_area_ingredients(
+            top_area.dict_combo["wallet_list"].get()
+        ),
+        # command=lambda: purchers_area_ingredients(top_area.objList[1].get()),
     )
     bottom2_area.button_display(
         text="Odśwież portfel", row=1, column=0, padx=5, pady=15, width=15
@@ -436,7 +457,7 @@ def result_area_ingredients() -> None:
         style="11_label.TLabel",
     )
     bottom3_area.entry_display(
-        result_value=readFile.result_values["Profit_zl"],
+        result_value=variable_json_File.result_values["Profit_zl"],
         state="readonly",
         row=1,
         column=1,
@@ -450,7 +471,7 @@ def result_area_ingredients() -> None:
         style="11_label.TLabel",
     )
     bottom3_area.entry_display(
-        result_value=readFile.result_values["Profit_dollar"],
+        result_value=variable_json_File.result_values["Profit_dollar"],
         state="readonly",
         row=2,
         column=1,
@@ -464,7 +485,7 @@ def result_area_ingredients() -> None:
         style="11_label.TLabel",
     )
     bottom3_area.entry_display(
-        result_value=readFile.result_values["Profit_%"],
+        result_value=variable_json_File.result_values["Profit_%"],
         state="readonly",
         text="%",
         row=3,
@@ -479,7 +500,7 @@ def result_area_ingredients() -> None:
         style="11_label.TLabel",
     )
     bottom3_area.entry_display(
-        result_value=readFile.result_values["Value_of_wallet"],
+        result_value=variable_json_File.result_values["Value_of_wallet"],
         state="readonly",
         row=4,
         column=1,
@@ -494,7 +515,7 @@ def result_area_ingredients() -> None:
     )
     bottom3_area.entry_display(
         width=10,
-        result_value=readFile.result_values["Invest_value"],
+        result_value=variable_json_File.result_values["Invest_value"],
         state="readonly",
         row=5,
         column=1,
@@ -503,7 +524,6 @@ def result_area_ingredients() -> None:
 
 
 def main() -> None:
-    # For test only
     logins_area_ingredients()
     top_area_ingredients()
     th.Thread(target=middle_area_ingrednients()).start()
