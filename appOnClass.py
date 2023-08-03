@@ -17,9 +17,10 @@ root.style.configure(
     "11_label.TLabel", bordercolor="", borderwidth=0, font=("Helvetica", 11)
 )
 root.style.configure("primary.Treeview", rowheight=22, borderwidth=0)
+root.style.configure("Treeview.Heading", font=("Helvetica", 11))
+
 root.style.configure("primary.TEntry", font=("Helvetica", 12))
 root.style.configure("primary.TButton", font=("Helvetica", 11), buttonuprelief="")
-root.style.configure("Treeview.Heading", font=("Helvetica", 11))
 root.style.configure("12_label.TLabel", font=("Helvetica", 12))
 core = ttk.Frame(root)
 core.grid()
@@ -89,11 +90,16 @@ def price_wallet(wallet: list) -> list:
     Profit_zl = 0
     Profit_dollar = 0
     # count price for each cryptocorrency
-    for i in range(len(wallet)):
+
+    def count_percent_value(profit_pln: float, amount: float):
+        result = ((profit_pln * 100) / abs(float(amount))).__round__(2)
+        return f"{result} %"
+
+    for index, _ in enumerate(wallet):
         try:
-            download_price = prices[wallet[i][0] + "USDT"]
+            download_price = prices[wallet[index][0] + "USDT"]
         except KeyError:
-            if wallet[i][0] == "ARI10":
+            if wallet[index][0] == "ARI10":
                 download_price = variable_json_File.file_dict["variable_json"][
                     "Cena_ARI10"
                 ]
@@ -103,19 +109,15 @@ def price_wallet(wallet: list) -> list:
         price_pln = (download_price * read_file["Stable_price"]["Dolar"][0]).__round__(
             3
         )
-        value_pln = (float(wallet[i][3]) * price_pln).__round__(2)
-        value_dollar = (float(wallet[i][3]) * download_price).__round__(2)
-        profit_lost_zl = (value_pln - float(wallet[i][1])).__round__(2)
-        profit_lost_dollar = (value_dollar - float(wallet[i][2])).__round__(2)
+        value_pln = (float(wallet[index][3]) * price_pln).__round__(2)
+        value_dollar = (float(wallet[index][3]) * download_price).__round__(2)
+        profit_lost_zl = (value_pln - float(wallet[index][1])).__round__(2)
+        profit_lost_dollar = (value_dollar - float(wallet[index][2])).__round__(2)
         # Value for frame result in app
         Profit_zl += profit_lost_zl
         Profit_dollar += profit_lost_dollar
         val_of_wallet_pln += value_pln
-        invest_val += float(wallet[i][1])
-
-        def count_percent():
-            result = ((profit_lost_zl * 100) / abs(float(wallet[i][1]))).__round__(2)
-            return f"{result} %"
+        invest_val += float(wallet[index][1])
 
         kryptoListFromWallet.append(
             [
@@ -125,9 +127,10 @@ def price_wallet(wallet: list) -> list:
                 value_dollar,
                 profit_lost_zl,
                 profit_lost_dollar,
-                count_percent(),
+                count_percent_value(profit_lost_zl, wallet[index][1]),
             ]
         )
+
     variable_json_File.result_values["Profit_zl"] = Profit_zl.__round__(2)
     variable_json_File.result_values["Profit_dollar"] = Profit_dollar.__round__(2)
     variable_json_File.result_values["Profit_%"] = (
@@ -167,7 +170,7 @@ def refresh_result_data():
 
 
 def button_refresh_prices() -> None:
-    top_area.objList[2].configure(text=f"Status na dzień: {time_now()}")
+    top_area.objList[1].configure(text=f"Status na dzień: {time_now()}")
     th.Thread(
         target=middle_area.add_data_in_treeview(
             middle_area.objList[1],
@@ -210,7 +213,8 @@ def refresh_wallet(event):
     # aktywowanie wyliczeń wartości na nowych danych
     refresh_result_data()
     # aktualizacja wykresów
-    th.Thread(target=refresh_charts_data).start()
+    # th.Thread(target=refresh_charts_data).start()
+    refresh_charts_data()
 
 
 # Top area in main app

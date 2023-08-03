@@ -60,12 +60,12 @@ class AreaFrame:
         columnspan: int = None,
         width: int = 90,
     ):
-        treeview = ttk.Treeview(self.frame, bootstyle="primary")
+        # treeview = ttk.Treeview(self.frame, bootstyle="primary")
+        treeview = ttk.Treeview(self.frame, style="primary")
         treeview.heading("#0", text="\n")
-
         treeview["columns"] = columns
         treeview.configure(show="headings", selectmode="browse")
-
+        # treeview.configure("Treeview.Heading", rowheight=20)
         treeview.grid(
             row=row,
             column=column,
@@ -85,7 +85,7 @@ class AreaFrame:
 
         self.objList.append(treeview)
 
-    def add_data_in_treeview(self, objkey: ttk.Treeview, dataObj, type: str = ""):
+    def add_data_in_treeview(self, objkey: ttk.Treeview, dataObj: list, type: str = ""):
         """Clear treeview, insert data in treeview"""
         for i in objkey.get_children():
             objkey.delete(i)
@@ -181,7 +181,6 @@ class AreaFrame:
         # self.objList.append(combobox)
         self.dict_combo[f"{name}"] = combobox
 
-    # Przerobić na statyczną metode
     # def chart(self, krypto_list: list):
     #     def update_charts_data(krypto_list):
     #         with open("App_file\zmienne.json", "r+") as file:
@@ -355,6 +354,8 @@ class AreaFrame:
     #     )
 
     #     selected_combobox(None)
+
+    # Przerobić na statyczną metode
 
     def chart_v2(self, krypto_list: list, variable_json: object):
         today = datetime.today().strftime("%Y-%m-%d")

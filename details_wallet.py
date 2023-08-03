@@ -1,6 +1,7 @@
 import tkinter.messagebox as msgbox
 from datetime import datetime
 from Classes import AreaFrame, TopFrame, ReadFile
+import ttkbootstrap as ttk
 
 
 def purchers_area_ingredients(choice_wallet: str) -> None:
@@ -79,8 +80,11 @@ def purchers_area_ingredients(choice_wallet: str) -> None:
     except FileNotFoundError:
         msgbox.showinfo("Informacja", "Niestety nie ma szczegółów tego portfela.")
     if exist:
-        purchase_details_window = TopFrame()
-        purchase_details_area = AreaFrame(onFrame=purchase_details_window.frame)
+        purchase_details_window = ttk.Toplevel()
+        purchase_details_window.style.configure(
+            "primary.Treeview", rowheight=22, borderwidth=0
+        )
+        purchase_details_area = AreaFrame(onFrame=purchase_details_window)
         purchase_details_area.text_display(text="Data", row=0, column=0, columnspan=2)
         purchase_details_area.text_display(text="Nazwa", row=0, column=2, columnspan=2)
         purchase_details_area.text_display(
