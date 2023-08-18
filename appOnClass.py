@@ -32,10 +32,7 @@ bottom3_area = AreaFrame(onFrame=core, row=2, column=2, sticky="n")
 
 # window for login
 logins_window = TopFrame()
-
 logins_area = AreaFrame(onFrame=logins_window.frame)
-# purchase_details_window = TopFrame()
-# purchase_details_area = AreaFrame(onFrame=purchase_details_window.frame)
 
 # Trzeba to rozbić by każdy obiekt zawierał inne pobrane dane
 variable_json_File = ReadData()
@@ -195,7 +192,7 @@ def refresh_wallet(event):
     # czyszczenie tabeli portfel
 
     # wprowadzenie wartości do tabeli portfel
-    with open(f"Dane\{top_area.dict_combo['wallet_list'].get()}.txt", "r") as file:
+    with open(f"Dane\{top_area.dict_combo['wal let_list'].get()}.txt", "r") as file:
         data = file.read().splitlines()
     for i in range(len(data)):
         data[i] = data[i].split(",")
@@ -426,10 +423,15 @@ def buttons_area_ingredients() -> None:
         pady=15,
         width=18,
         command=lambda: purchers_area_ingredients(
-            top_area.dict_combo["wallet_list"].get()
+            top_area.dict_combo["wallet_list"].get(),
+            bottom2_area.objList[0],  # wallet_name, button obj
         ),
-        # command=lambda: purchers_area_ingredients(top_area.objList[1].get()),
     )
+
+    # print(root.winfo_children())
+
+    # print(bottom2_area.frame.winfo_children())
+
     bottom2_area.button_display(
         text="Odśwież portfel", row=1, column=0, padx=5, pady=15, width=15
     )
