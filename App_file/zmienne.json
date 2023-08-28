@@ -1,23 +1,21 @@
 {
-    "file_path": {
-        "path_portfel": "ściezka do portela1",
-        "path_file2": "ściezka do portela2",
-        "path_file3": "ściezka do portela3"
-    },
-    "Sciezka_portfel": "Dane\\Portfel_1.txt",
-    "Sciezka_portfel_test": "Dane\\Portfel_test.txt",
-    "Sciezka_Szczegoly_zakupow": "Dane\\Szczegoly_zakupow_org.txt",
+    "URL_Credentials": "https://adix0911.eu.pythonanywhere.com/",
     "Sciezka_Dane_wykres": "App_file\\Dane_wykresy.csv",
-    "Charts_data": "2023-07-24",
-    "Sciezka_Dane_old": "App_file\\Old_v.csv",
+    "Charts_data": "2023-08-28",
+
     "URL_krypto_price": "https://api.binance.com/api/v3/ticker/price?symbol=",
     "URL_krypto_price2": "https://api.binance.com/api/v3/ticker/price?symbols=",
     "URL_wykres_data": "https://www.cryptodatadownload.com/cdd/Binance_{i}_1h.csv",
     "Cena_Dolar": 4.3,
-    "Cena_ARI10": 0.0064,
-    "Charts_no_krypto_data": [
-        "ARI10"
-    ],
-    "Charts_enable_krypto": [],
-    "czas_refresh": 5
+    "Cena_ARI10": 0.0014,
+    "available_charts_data": [
+        "ADA",
+        "BCH",
+        "BTC",
+        "DOGE",
+        "ETH",
+        "LRC",
+        "LTC",
+        "XRP"
+    ]
 }

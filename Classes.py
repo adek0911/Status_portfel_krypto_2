@@ -60,11 +60,12 @@ class AreaFrame:
         columnspan: int = None,
         width: int = 90,
     ):
-        treeview = ttk.Treeview(self.frame, bootstyle="primary")
-
+        # treeview = ttk.Treeview(self.frame, bootstyle="primary")
+        treeview = ttk.Treeview(self.frame, style="primary")
+        treeview.heading("#0", text="\n")
         treeview["columns"] = columns
         treeview.configure(show="headings", selectmode="browse")
-
+        # treeview.configure("Treeview.Heading", rowheight=20)
         treeview.grid(
             row=row,
             column=column,
@@ -80,11 +81,11 @@ class AreaFrame:
         for i in range(len(columns)):
             treeview.column(columns[i], width=width, anchor="center")
             treeview.heading(columns[i], text=headings_text[i])
-        treeview.heading("#0", text="\n")
+        # treeview.configure(hea)
 
         self.objList.append(treeview)
 
-    def add_data_in_treeview(self, objkey: ttk.Treeview, dataObj, type: str = ""):
+    def add_data_in_treeview(self, objkey: ttk.Treeview, dataObj: list, type: str = ""):
         """Clear treeview, insert data in treeview"""
         for i in objkey.get_children():
             objkey.delete(i)
@@ -177,46 +178,49 @@ class AreaFrame:
         )
         combobox.grid(row=row, column=column, **kwargs)
         combobox.current(0)
-        # self.objList.append(combobox)
         self.dict_combo[f"{name}"] = combobox
 
     # Przerobić na statyczną metode
-    def chart(self, krypto_list: list):
-        def update_charts_data(krypto_list):
-            with open("App_file\zmienne.json", "r+") as file:
-                jsonFile = json.load(file)
-                if jsonFile["Charts_data"] != today:
-                    for i in krypto_list:
-                        # krypto_list = ["ADA", "LTC", "DOGE", "XRP", "BCH", "BTC", "LRC", "ETH", "ARI10"]
-                        url = requests.get(
-                            f"https://www.cryptodatadownload.com/cdd/Binance_{i}USDT_d.csv"
-                        )
-                        if url.status_code == 200:
-                            result = url.text.split("\n", 100)
-                            # print(result[0:2])#'Unix,Date,Symbol,Open,High,Low,Close,Volume BTC,Volume USDT,tradecount'
-                            del result[:2]
-                            result = result[:100]
-                            for j in range(len(result)):
-                                result[j] = result[j].split(",")
-                                del result[j][0], result[j][2:5], result[j][3:]
-                                result[j][0:1] = result[j][0].split(" ")
+    def chart_v2(self, krypto_list: list, variable_json: object):
+        today = datetime.today().strftime("%Y-%m-%d")
 
-                            with open(
-                                f"Chart_file\\{i}_chartdata.csv",
-                                "w",
-                                encoding="UTF-8",
-                                newline="",
-                            ) as d_wykres:
-                                writer = csv.writer(d_wykres)
-                                writer.writerows(result)
-                        if url.status_code != 200:
-                            print("Brak danych ze strony")
-                            if not i in jsonFile["Charts_no_krypto_data"]:
-                                jsonFile["Charts_no_krypto_data"].append(i)
-                    jsonFile["Charts_data"] = today
+        def load_chart_data(krypto_list: list):  # , crypto_date: str
+            # stworzyć metodę sprawdzającą
+
+            if variable_json.file_dict["variable_json"]["Charts_data"] != today:
+                for i in krypto_list:
+                    url = requests.get(
+                        f"https://www.cryptodatadownload.com/cdd/Binance_{i}USDT_d.csv"
+                    )
+                    if url.status_code == 200:
+                        result = url.text.split("\n", 100)
+                        del result[:2]
+                        result = result[:100]
+                        for index, _ in enumerate(result):
+                            result[index] = result[index].split(",")
+                            del result[index][0], result[index][2:5], result[index][3:]
+                            result[index][0:1] = result[index][0].split(" ")
+
+                        with open(
+                            f"Chart_file\\{i}_chartdata.csv",
+                            "w",
+                            encoding="UTF-8",
+                            newline="",
+                        ) as d_wykres:
+                            writer = csv.writer(d_wykres)
+                            writer.writerows(result)
+                    if url.status_code != 200:
+                        # make some tests
+                        mes = msgbox.showerror(
+                            title="Brak danych",
+                            message=f"Niestety nie udało się pobrać danych dla {i}",
+                        )
+                with open("App_file\zmienne.json", "r+") as file:
+                    read_json = json.load(file)
+                    read_json["Charts_data"] = today
+                    variable_json.file_dict["variable_json"]["Charts_data"] = today
                     file.seek(0, 0)
-                    file.truncate()
-                    json.dump(jsonFile, file, ensure_ascii=False, indent=4)
+                    json.dump(read_json, file, ensure_ascii=False, indent=4)
 
         plt.style.use("seaborn-v0_8-darkgrid")
         scroll_frame = ScrolledFrame(
@@ -228,7 +232,6 @@ class AreaFrame:
         frame_wykresy.grid(row=1, column=0, columnspan=2, pady=10)
         canvas = ttk.Canvas(scroll_frame)
 
-        today = datetime.today().strftime("%Y-%m-%d")
         now = datetime.today() + relativedelta(days=-1)  # from datetime to str
         data_range = (
             (now + relativedelta(weeks=-2)).strftime("%Y-%m-%d"),
@@ -238,7 +241,7 @@ class AreaFrame:
         )
 
         def selected_combobox(event):
-            update_charts_data(krypto_list)
+            load_chart_data(krypto_list)
             choice = self.dict_combo["available_crypto"].get()
             try:
                 with open(
@@ -341,6 +344,7 @@ class AreaFrame:
                         )
                     line = FigureCanvasTkAgg(wykres, chart_frame)
                     line.get_tk_widget().grid(row=j, ipady=45)  # , ipady=45)
+                scroll_frame.yview_moveto(0)
             # Nie było jeszcze sprawdzane
             except FileNotFoundError:
                 msgbox.INFO("Nie ma pliku o takiej nazwie")
@@ -352,7 +356,6 @@ class AreaFrame:
         self.dict_combo["available_crypto"].bind(
             "<<ComboboxSelected>>", selected_combobox
         )
-
         selected_combobox(None)
 
     def entry_display(
