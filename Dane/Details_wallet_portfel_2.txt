@@ -1,4 +1,3 @@
-Data,Krypto,Kupno/Sprzedaż,Cena zl,Cena $,Ilość
 06.05.2022,Dupa,Kupno,4848.50,1040.45,0.03017701
 06.05.2022,cipicici,Kupno,4848.50,1040.45,0.03017701
 21.09.2021,ETH,Kupno,5000,1272.26,0.4569622

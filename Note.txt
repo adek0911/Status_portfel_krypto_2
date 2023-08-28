@@ -61,28 +61,15 @@ Podczas odpalania bez internetu wyłączyć ładowanie wykrsów / Załadować za
 
 Odczyt z pliku że np. w 3 linii jest nazwa portfela skąd ma brać dane 
 
-BCH no
-BTC good
-XRP good
-ADA good
-LTC good
-DOGE good
-LRC good
-
-
-NAPISAĆ FUKCJE DO PRZYCISKÓW ZMIANY Szczegoly_zakupow   DONE
 
 Okno do wpisania wartości dla krypto których nie ma w bazie 
 Wielowątkowość wczytywania cen krypto 
 
 
-Utworzyć listę rozsuwaną która będzie wyświetlać dostępne krypto w wykresach:
-    po wybraniu wyświetla wykresy : 2 tyg, 1 miesiąc oraz 3 miesiące wraz z średnią z tego okresu
-
-Zrobić przycisk analiza:
+Zrobić przycisk plany inwestycyjne:
     Wyświetlanie aktualnego portfela wraz z wartością oraz 
     możliwość zastanowienia się jak wyglądały by stan podczas
-    inwestycji o określoną kwotę i jak zmieni się stan 
+    inwestycji o określoną kwotę i jaki będzie to miało wpływ na cały portfel
 
 Dodać kolumne w tabeli wartości "cena podczas zakupu"
 
@@ -90,25 +77,23 @@ Dodać kolumne w tabeli wartości "cena podczas zakupu"
     Przerobić i wstawić pod przycisk szczegóły zakupów
     Stowrzyć plik na serwerze z danymi do logowania oraz stworzyć do niego requesta
     #aktualnie działa na lokalnych plikach
-    Zrobić całą logikę na temat wyboru portfeli w ekranie głównym:
         zmiana wartości w tabelach: portfel, wyliczenia oraz wyniki
         Zaktualizować listę możliwych wykresów na bazie nowego portfela
-    Zrobić blokadę na zamknięcie okna logowania by dane się nie wczytywały
-    Zrobić możliwość odczytu danych bez internetu
-    Zaprojektować jak będzie wyglądało okno bota oraz jego możliwości
     Stworzyć przycisk założenia gdzie będą przechowywane zmienne z tabeli wartości 
 oraz będzie można analizować nowe inwestycje jak wpływają na wartość aktywów
 # Będą zapisane lokalnie dla każdego loginu/ portfela osobno
 
 
 Plik z szczegółami zakupu
-BOt - generowanie wyników analizy statystycznej wraz z 
-wynikkiem kilku modeli maszynowych wraz z sugestiami inwestycyjnymi.
- (zrobić to na zewnętrznym serwerze żeby dane było możliwe do 
- zyskania w którkim czasie lokanie tylko mnożenie wartości portfela)
 
- Zmianę portfela w głównym oknie aplikacji
- zrobić bazę na swoich plikach do logowania i stamtąd pobierać dane 
+## Mocna przyszłość w planach 
+    BOt - generowanie wyników analizy statystycznej wraz z 
+    wynikkiem kilku modeli maszynowych wraz z sugestiami inwestycyjnymi.
+    (zrobić to na zewnętrznym serwerze żeby dane było możliwe do 
+    zyskania w którkim czasie lokanie tylko mnożenie wartości portfela)
+
+ Zmianę portfela w głównym oknie aplikacji  done
+ zrobić bazę na swoich plikach do logowania i stamtąd pobierać dane Done
  stworzyć możliwość tworzenia analiz np. ile zaiwestować by wyjść na na zero
   albo jaka cena jest potrzebna by uzysać zysk
 
@@ -117,5 +102,9 @@ Wymyślić gdzie przechowywać dane do wykresów
 Stworzyć listę dostępnych walut zamiast nie dostępnych, pobrać listę możliwych
     przekształcić ją i zapisac i jeżeli znajdzie taką pobrać odpowiednie informacje tylko 
     z danego portfela
-    
+
+
+27.08
+    Sprzątnąć w zmiannych i plikach aplikacji
+    Wgrać zmiany na github oraz zastanowić się czy przechowywać swój portfel na serwerze 
     

@@ -1,11 +1,15 @@
 {
     "url": "https://api.apilayer.com/currency_data/live?source=USD&currencies=PLN",
     "headers": {
-        "apikey": "o49OHWHzwbhE38MkfZZNDoOCV3bgOkBt"
+        "apikey": "***"
     },
     "Stable_price": {
         "Dolar": [
+<<<<<<< HEAD
             4.141195,
+=======
+            4.13635,
+>>>>>>> 6b15175f982cc8f17cd7a628f87da5751ced9bf3
             "28-08-2023"
         ]
     }
