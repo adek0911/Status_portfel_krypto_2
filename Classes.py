@@ -178,7 +178,6 @@ class AreaFrame:
         )
         combobox.grid(row=row, column=column, **kwargs)
         combobox.current(0)
-        # combobox.ge
         self.dict_combo[f"{name}"] = combobox
 
     # Przerobić na statyczną metode
