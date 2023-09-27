@@ -16,13 +16,10 @@ import tkinter.messagebox as msgbox
 class AreaFrame:
     def __init__(self, height=100, width=100, onFrame=ttk.Frame, **kwargs) -> None:
         self.objList = []
-        # sprawdzić może wykorzystać
-        # self.__dict__={}
         self.dict_combo = {}
         self.height = height
         self.width = width
         self.frame = ttk.Frame(onFrame, width=self.width, height=self.height)
-        # self.frame.configure(bg=color)
         self.frame.grid(**kwargs)
 
     def __str__(self) -> str:
@@ -82,7 +79,6 @@ class AreaFrame:
             treeview.column(columns[i], width=width, anchor="center")
             treeview.heading(columns[i], text=headings_text[i])
         # treeview.configure(hea)
-
         self.objList.append(treeview)
 
     def add_data_in_treeview(self, objkey: ttk.Treeview, dataObj: list, type: str = ""):
@@ -167,7 +163,14 @@ class AreaFrame:
                 objkey2.focus(focus_selection)
 
     def combobox_display(
-        self, values: list, width: int, row: int, column: int, name: str, **kwargs
+        self,
+        values: list,
+        width: int,
+        row: int,
+        column: int,
+        name: str,
+        justyfy="left",
+        **kwargs,
     ):
         combobox = ttk.Combobox(
             self.frame,
@@ -175,9 +178,11 @@ class AreaFrame:
             bootstyle="primary",
             state="readonly",
             width=width,
+            justify=justyfy,
         )
         combobox.grid(row=row, column=column, **kwargs)
         combobox.current(0)
+
         self.dict_combo[f"{name}"] = combobox
 
     # Przerobić na statyczną metode
@@ -211,7 +216,7 @@ class AreaFrame:
                             writer.writerows(result)
                     if url.status_code != 200:
                         # make some tests
-                        mes = msgbox.showerror(
+                        msgbox.showerror(
                             title="Brak danych",
                             message=f"Niestety nie udało się pobrać danych dla {i}",
                         )
@@ -226,7 +231,7 @@ class AreaFrame:
         scroll_frame = ScrolledFrame(
             self.frame, autohide=True, width=410, height=260
         )  # 410
-        scroll_frame.grid(row=1, column=0, columnspan=2)
+        scroll_frame.grid(row=1, column=0, columnspan=2, padx=5,pady=5)
 
         frame_wykresy = ttk.Frame(self.frame)
         frame_wykresy.grid(row=1, column=0, columnspan=2, pady=10)
@@ -258,10 +263,8 @@ class AreaFrame:
                 def add_to_chart_lists():
                     tmp = i[0][5:]
                     tmp = tmp[3] + tmp[4] + tmp[2] + tmp[0] + tmp[1]
-
                     chart_list[0].append(tmp)
                     chart_list[1].append(float(i[2]))
-                    pass
 
                 for j in range(3):
                     # chart on resolution of laptop ?check scaling %
@@ -270,7 +273,9 @@ class AreaFrame:
                     # )
                     # chart on resolution of PC ? check scaling  form pix to %
                     wykres = plt.Figure(
-                        figsize=(4.2, 1.6), dpi=100, facecolor=(0.18, 0.31, 0.31)
+                        figsize=(4.2, 1.6),
+                        dpi=100,
+                        facecolor=("#375a7f"),  # (0.18, 0.31, 0.31)
                     )
                     chart_list = [[], []]
                     for i in d_data:
@@ -390,6 +395,7 @@ class TopFrame:
 class ReadData:
     """Create list with file objects"""
 
+    # brak potrzeby tworzenia specialnie słownika z plikami lepiej tworzyć osobne obiekty dla każdego osobnego pliku
     def __init__(self) -> None:
         self.file_dict = {}
         self.result_values = {

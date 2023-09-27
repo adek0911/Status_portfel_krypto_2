@@ -107,4 +107,8 @@ Stworzyć listę dostępnych walut zamiast nie dostępnych, pobrać listę możl
 27.08
     Sprzątnąć w zmiannych i plikach aplikacji
     Wgrać zmiany na github oraz zastanowić się czy przechowywać swój portfel na serwerze 
-    
+
+
+
+
+Po zrobieniu invest nie dziłają szczegóły zakupów

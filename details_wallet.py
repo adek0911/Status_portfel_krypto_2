@@ -1,6 +1,6 @@
 import tkinter.messagebox as msgbox
 from datetime import datetime
-from Classes import AreaFrame, ReadFile
+from Classes import AreaFrame, ReadFile, TopFrame
 import ttkbootstrap as ttk
 
 
@@ -171,15 +171,15 @@ def purchers_area_ingredients(choice_wallet: str, button_obj: ttk.Button) -> Non
         msgbox.showinfo("Informacja", "Niestety nie ma szczegółów tego portfela.")
     else:
         button_obj.configure(state="disable")
-        purchase_details_window = ttk.Toplevel()
-        purchase_details_window.style.configure(
+        purchase_details_window = TopFrame()
+        purchase_details_window.frame.style.configure(
             "primary.Treeview", rowheight=22, borderwidth=0
         )
-        purchase_details_window.protocol(
+        purchase_details_window.frame.protocol(
             "WM_DELETE_WINDOW",
-            lambda: button_change_state(button_obj, purchase_details_window),
+            lambda: button_change_state(button_obj, purchase_details_window.frame),
         )
-        purchase_details_area = AreaFrame(onFrame=purchase_details_window)
+        purchase_details_area = AreaFrame(onFrame=purchase_details_window.frame)
         status_transaction = ("Kupno", "Sprzedaz")
         purchase_details_area.text_display(
             text="Data", row=0, column=0, columnspan=2

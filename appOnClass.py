@@ -1,5 +1,4 @@
 from datetime import datetime
-import os
 import json
 import ttkbootstrap as ttk
 import requests
@@ -7,6 +6,8 @@ import threading as th
 import tkinter.messagebox as msgbox
 from Classes import AreaFrame, ReadData, TopFrame, ReadFile
 from details_wallet import purchers_area_ingredients
+
+# from Invested_plan import invested_area_ingredients
 
 root = ttk.Window(themename="darkly")
 # before
@@ -21,14 +22,16 @@ root.style.configure("Treeview.Heading", font=("Helvetica", 11))
 
 root.style.configure("primary.TEntry", font=("Helvetica", 12))
 root.style.configure("primary.TButton", font=("Helvetica", 11), buttonuprelief="")
+# work but need to configure prop
+root.style.configure("Invest.TButton", font=("Helvetica", 11), background="Red")
 root.style.configure("12_label.TLabel", font=("Helvetica", 12))
 core = ttk.Frame(root)
 core.grid()
 top_area = AreaFrame(onFrame=core, row=0, column=0, columnspan=4, sticky="ew", padx=5)
 middle_area = AreaFrame(onFrame=core, row=1, column=0, columnspan=4)
-bottom1_area = AreaFrame(onFrame=core, row=2, column=0, sticky="w")
-bottom2_area = AreaFrame(onFrame=core, row=2, column=1, sticky="n")
-bottom3_area = AreaFrame(onFrame=core, row=2, column=2, sticky="n")
+charts_area = AreaFrame(onFrame=core, row=2, column=0, sticky="w")
+buttons_area = AreaFrame(onFrame=core, row=2, column=1, sticky="n")
+result_area = AreaFrame(onFrame=core, row=2, column=2, sticky="n")
 
 # window for login
 logins_window = TopFrame()
@@ -39,8 +42,106 @@ variable_json_File = ReadData()
 # readFile.file_list[0] json zmienne
 variable_json_File.read_from_file("App_file\zmienne.json", "json", "variable_json")
 # readFile.file_list[0]["Sciezka_portfel"],"txt",
+dollar_price = ReadData()
+dollar_price.read_from_file("App_file\zmienneApiDolar.json", "json", "dollar_price")
 
 session_user = {}
+
+
+def invested_area_ingredients():
+    def button_change_color(button: ttk.Button):
+        button.configure(style="Invest.TButton")  # "primary": "#375a7f",
+        pass
+
+    def count_predict():
+        value = [invested_area.objList[1].get(), invested_area.objList[3].get()]
+        dollar = dollar_price.file_dict["dollar_price"]["Stable_price"]["Dolar"][0]
+        # zrobić ograniczenia tylko na liczby
+        if value[0] == "":
+            value[0] = float(value[1]) * dollar
+            invested_area.objList[1].insert(0, str(value[0].__round__(2)))
+        if value[1] == "":
+            value[1] = float(value[0]) / dollar
+            invested_area.objList[3].insert(0, str(value[1].__round__(2)))
+
+        combo_index = crypto_from_wallet.index(
+            invested_area.dict_combo["available_crypto"].get()
+        )
+        children_index = middle_area.objList[1].get_children()[combo_index]
+
+        quantity = (
+            float(value[0])
+            / float(middle_area.objList[1].item(children_index)["values"][0])
+        ).__round__(4)
+        invested_area.objList[5]["state"] = "normal"
+        invested_area.objList[5].insert(0, str(quantity))
+        invested_area.objList[5]["state"] = "readonly"
+
+    def clear_entry():
+        invested_area.objList[1].delete(0, "end")
+        invested_area.objList[3].delete(0, "end")
+        invested_area.objList[5]["state"] = "normal"
+        invested_area.objList[5].delete(0, "end")
+        invested_area.objList[5]["state"] = "readonly"
+
+    def add_to_wallet():
+        entry = [
+            invested_area.dict_combo["available_crypto"].get(),
+            invested_area.objList[1].get(),
+            invested_area.objList[3].get(),
+            invested_area.objList[5].get(),
+        ]
+        if entry[1] != "" and entry[2] != "":
+            clear_entry()
+            invested_area.objList[8].insert("", "end", values=entry)
+            for i in variable_json_File.file_dict["wallet_data"]:
+                if i[0] == entry[0]:
+                    i[1] = float(entry[1]) + i[1]
+                    i[2] = float(entry[2]) + i[2]
+                    i[3] = float(entry[3]) + i[3]
+            middle_area.add_data_in_treeview(
+                middle_area.objList[0],
+                variable_json_File.file_dict["wallet_data"],
+                "txt",
+            )
+            button_refresh_prices()
+        else:
+            msgbox.showwarning("Error", "Uzupełnij kolumnę z ceną")
+
+    """Poniżej tabela z zaprezentowanymi zmianami, przycisk czyszczący predykcje oraz przycisk zapisujący w pliku"""
+
+    charts_area.frame.grid_forget()
+    button_change_color(buttons_area.objList[2])
+    # buttons_area.objList[2].configure(bg="red")
+    invested_area = AreaFrame(onFrame=core, row=2, column=0, sticky="n")
+    crypto_from_wallet = [i[0] for i in variable_json_File.file_dict["wallet_data"]]
+    invested_area.combobox_display(
+        values=crypto_from_wallet,
+        row=1,
+        column=0,
+        width=8,
+        pady=5,
+        name="available_crypto",
+        justyfy="center",
+    )
+    invested_area.text_display("Cena PLN", row=0, column=1)
+    invested_area.entry_display(row=1, column=1)
+    invested_area.text_display("Cena USD", row=0, column=2)
+    invested_area.entry_display(row=1, column=2)
+    invested_area.text_display("Ilość", row=0, column=3)
+    invested_area.entry_display(row=1, column=3, state="disable")
+
+    invested_area.button_display(
+        "Przelicz", row=2, column=0, columnspan=2, command=count_predict
+    )
+    invested_area.button_display(
+        "Dodaj", row=2, column=2, columnspan=2, command=add_to_wallet
+    )
+    headings = ["Nazwa", "Cena_PLN", "Cena_USD", "Ilość"]
+    invested_area.treeview_display(
+        columns=tuple(headings), headings_text=headings, row=3, column=0, columnspan=4
+    )
+    invested_area.objList[8].configure(height=7)
 
 
 def time_now() -> str:
@@ -49,7 +150,7 @@ def time_now() -> str:
 
 def price_wallet(wallet: list) -> list:
     """Prepare request, download krypto price, count value"""
-    kryptoListFromWallet = []
+    krypto_list_from_wallet = []
     # 4 zmienne do wyliczenia i dodania do listy dane
     """Download dolar price and update every 24h"""
     with open("App_file\zmienneApiDolar.json", mode="r+", encoding="UTF-8") as file:
@@ -116,7 +217,7 @@ def price_wallet(wallet: list) -> list:
         val_of_wallet_pln += value_pln
         invest_val += float(wallet[index][1])
 
-        kryptoListFromWallet.append(
+        krypto_list_from_wallet.append(
             [
                 price_pln,
                 download_price,
@@ -135,35 +236,35 @@ def price_wallet(wallet: list) -> list:
     ).__round__(2)
     variable_json_File.result_values["Value_of_wallet"] = val_of_wallet_pln.__round__(2)
     variable_json_File.result_values["Invest_value"] = invest_val.__round__(2)
-    return kryptoListFromWallet
+    return krypto_list_from_wallet
 
 
 def refresh_result_data():
     for i in range(2, 11, 2):
-        bottom3_area.objList[i]["state"] = "normal"
-        bottom3_area.objList[i].delete(0, "end")
+        result_area.objList[i]["state"] = "normal"
+        result_area.objList[i].delete(0, "end")
         if i == 2:
-            bottom3_area.objList[i].insert(
+            result_area.objList[i].insert(
                 0, variable_json_File.result_values["Profit_zl"]
             )
         if i == 4:
-            bottom3_area.objList[i].insert(
+            result_area.objList[i].insert(
                 0, variable_json_File.result_values["Profit_dollar"]
             )
         if i == 6:
-            bottom3_area.objList[i].insert(
+            result_area.objList[i].insert(
                 0, f'{variable_json_File.result_values["Profit_%"]} %'
             )
         if i == 8:
-            bottom3_area.objList[i].insert(
+            result_area.objList[i].insert(
                 0, variable_json_File.result_values["Value_of_wallet"]
             )
         if i == 10:
-            bottom3_area.objList[i].insert(
+            result_area.objList[i].insert(
                 0, variable_json_File.result_values["Invest_value"]
             )
 
-        bottom3_area.objList[i]["state"] = "readonly"
+        result_area.objList[i]["state"] = "readonly"
 
 
 def button_refresh_prices() -> None:
@@ -179,7 +280,7 @@ def button_refresh_prices() -> None:
 
 
 def refresh_charts_data():
-    for widgets in bottom1_area.frame.winfo_children():
+    for widgets in charts_area.frame.winfo_children():
         widgets.destroy()
 
     chart_area_ingredients()
@@ -187,7 +288,6 @@ def refresh_charts_data():
 
 
 def log_out():
-    root.withdraw()
     logins_window = TopFrame()
     logins_area = AreaFrame(onFrame=logins_window.frame)
     logins_area_ingredients(logins_area, logins_window)
@@ -206,14 +306,11 @@ def downlad_wallet_values_from_database(current_wallet: str, ac_id: int):
             break
 
     # get wallet values and format data
-    response = requests.get(url_credentials + f"wallet_detail/{wallet_id}").json()
-    for i, val in enumerate(response):
-        response[i] = [
-            str(val["Name"]),
-            str(val["Price_PLN"]),
-            str(val["Price_USD"]),
-            str(val["Quantity"]),
-        ]
+    response: list[dict] = requests.get(
+        url_credentials + f"wallet_detail/{wallet_id}"
+    ).json()
+    for i in range(len(response)):
+        response[i] = list(response[i].values())
 
     variable_json_File.file_dict["wallet_data"] = response
 
@@ -253,8 +350,9 @@ def top_area_ingredients() -> None:
     responde = requests.get(
         url_credentials + f"wallets/{session_user['Account_ID']}"
     ).json()
-    wallet_lists = [i["Name"] for i in responde]
 
+    wallet_lists = [i["Name"] for i in responde]
+    # print(wallet_lists) #Testsd
     top_area.text_display(
         f"Wybierz portfel:", row=0, column=0, padx=5, style="11_label.TLabel"
     )
@@ -306,7 +404,6 @@ def check_logins(login: str, password: str, area: AreaFrame, window: TopFrame) -
     if len(login) > 0 and len(password) > 0 and responde.status_code == 200:
         responde = responde.json()
         if responde["Password"] == password:
-            # Temp
             session_user["login"] = login
             session_user["Account_ID"] = responde["Account_ID"]
             root.deiconify()
@@ -428,7 +525,7 @@ def middle_area_ingrednients() -> None:
 # bottom 1/3 area in main app
 def chart_area_ingredients() -> None:
     """Charts with data"""
-    bottom1_area.text_display(
+    charts_area.text_display(
         "Wybierz krypto do wyświetlania wykresu:",
         row=0,
         column=0,
@@ -440,7 +537,7 @@ def chart_area_ingredients() -> None:
         if i[0]
         in variable_json_File.file_dict["variable_json"]["available_charts_data"]
     ]
-    bottom1_area.combobox_display(
+    charts_area.combobox_display(
         values=krypto_wallet_list,
         row=0,
         column=1,
@@ -451,13 +548,13 @@ def chart_area_ingredients() -> None:
     # old version
     # bottom1_area.chart(krypto_wallet_list)
 
-    bottom1_area.chart_v2(krypto_wallet_list, variable_json_File)
+    charts_area.chart_v2(krypto_wallet_list, variable_json_File)
 
 
 # bottom 2/3 area in main app
 def buttons_area_ingredients() -> None:
     """Buttons with program options"""
-    bottom2_area.button_display(
+    buttons_area.button_display(
         text="Szczegóły zakupów",
         row=0,
         column=0,
@@ -466,21 +563,29 @@ def buttons_area_ingredients() -> None:
         width=18,
         command=lambda: purchers_area_ingredients(
             top_area.dict_combo["wallet_list"].get(),
-            bottom2_area.objList[0],  # wallet_name, button obj
+            buttons_area.objList[0],  # wallet_name, button obj
         ),
     )
     """Do nothing in future update wallet data if some was added in detail wallet"""
-    bottom2_area.button_display(
+    buttons_area.button_display(
         text="Odśwież portfel", row=1, column=0, padx=5, pady=15, width=15
     )
-    """"""
-    bottom2_area.button_display(
-        text="Plany inwestycyjne", row=2, column=0, padx=5, pady=15, width=12
+    """command=lambda: invested_area_ingredients(variable_json_File.file_dict["wallet_data"]),"""
+    # print(price_wallet(variable_json_File.file_dict["wallet_data"]))
+    buttons_area.button_display(
+        text="Plany inwestycyjne",
+        command=invested_area_ingredients,
+        row=2,
+        column=0,
+        padx=5,
+        pady=15,
+        width=16,
     )
-    bottom2_area.button_display(
+
+    buttons_area.button_display(
         text="Wyloguj", command=log_out, row=3, column=0, pady=15, width=10
     )
-    bottom2_area.button_display(
+    buttons_area.button_display(
         text="Exit", row=4, column=0, command=root.destroy, padx=5, pady=15
     )
 
@@ -489,49 +594,49 @@ def buttons_area_ingredients() -> None:
 def result_area_ingredients() -> None:
     """Result in one table about of wallet"""
 
-    bottom3_area.text_display(
+    result_area.text_display(
         text="Podsumowanie portfela",
         row=0,
         column=0,
         columnspan=2,
         style="12_label.TLabel",
     )
-    bottom3_area.text_display(
+    result_area.text_display(
         text="Ogólny Zysk/Strata zł wynosi: ",
         row=1,
         column=0,
         pady=15,
         style="11_label.TLabel",
     )
-    bottom3_area.entry_display(
+    result_area.entry_display(
         result_value=variable_json_File.result_values["Profit_zl"],
         state="readonly",
         row=1,
         column=1,
         insert=True,
     )
-    bottom3_area.text_display(
+    result_area.text_display(
         text="Ogólny Zysk/Strata $ wynosi: ",
         row=2,
         column=0,
         pady=15,
         style="11_label.TLabel",
     )
-    bottom3_area.entry_display(
+    result_area.entry_display(
         result_value=variable_json_File.result_values["Profit_dollar"],
         state="readonly",
         row=2,
         column=1,
         insert=True,
     )
-    bottom3_area.text_display(
+    result_area.text_display(
         text="Ogólny Zysk/Strata % wynosi: ",
         row=3,
         column=0,
         pady=15,
         style="11_label.TLabel",
     )
-    bottom3_area.entry_display(
+    result_area.entry_display(
         result_value=variable_json_File.result_values["Profit_%"],
         state="readonly",
         text="%",
@@ -539,28 +644,28 @@ def result_area_ingredients() -> None:
         column=1,
         insert=True,
     )
-    bottom3_area.text_display(
+    result_area.text_display(
         text="Wartość portfela w zł wynosi: ",
         row=4,
         column=0,
         pady=15,
         style="11_label.TLabel",
     )
-    bottom3_area.entry_display(
+    result_area.entry_display(
         result_value=variable_json_File.result_values["Value_of_wallet"],
         state="readonly",
         row=4,
         column=1,
         insert=True,
     )
-    bottom3_area.text_display(
+    result_area.text_display(
         text="Wartość zaiwestowana wynosi: ",
         row=5,
         column=0,
         pady=15,
         style="11_label.TLabel",
     )
-    bottom3_area.entry_display(
+    result_area.entry_display(
         width=10,
         result_value=variable_json_File.result_values["Invest_value"],
         state="readonly",
