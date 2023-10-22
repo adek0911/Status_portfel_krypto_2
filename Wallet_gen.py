@@ -78,5 +78,6 @@ for i in range(len(invest_values)):
     for j in range(len(wallet)):
         wallet[j] = ",".join([str(i) for i in wallet[j]])
 
-    with open(f"Wallets_gene\\wallet_gen_{i}.csv", "w") as file:
-        file.write("\n".join(wallet))
+    pprint(wallet)
+    # with open(f"Wallets_gene\\wallet_gen_{i}.csv", "w") as file:
+    #     file.write("\n".join(wallet))

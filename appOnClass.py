@@ -4,48 +4,12 @@ import ttkbootstrap as ttk
 import requests
 import threading as th
 import tkinter.messagebox as msgbox
-from Classes import AreaFrame, ReadData, TopFrame, ReadFile
+from Classes import AreaFrame, ReadData, TopFrame
 from details_wallet import purchers_area_ingredients
+from charts import chart_area_result
+from style_config import style_conf
 
 # from Invested_plan import invested_area_ingredients
-
-root = ttk.Window(themename="darkly")
-# before
-# root.style.configure(".", bordercolor="", borderwidth=0, font=("Helvetica", 9))
-
-root.style.configure(".", bordercolor="", borderwidth=0, font=("Helvetica", 10))
-root.style.configure(
-    "11_label.TLabel", bordercolor="", borderwidth=0, font=("Helvetica", 11)
-)
-root.style.configure("primary.Treeview", rowheight=22, borderwidth=0)
-root.style.configure("Treeview.Heading", font=("Helvetica", 11))
-
-root.style.configure("primary.TEntry", font=("Helvetica", 12))
-root.style.configure("primary.TButton", font=("Helvetica", 11), buttonuprelief="")
-# work but need to configure prop
-root.style.configure("Invest.TButton", font=("Helvetica", 11), background="Red")
-root.style.configure("12_label.TLabel", font=("Helvetica", 12))
-core = ttk.Frame(root)
-core.grid()
-top_area = AreaFrame(onFrame=core, row=0, column=0, columnspan=4, sticky="ew", padx=5)
-middle_area = AreaFrame(onFrame=core, row=1, column=0, columnspan=4)
-charts_area = AreaFrame(onFrame=core, row=2, column=0, sticky="w")
-buttons_area = AreaFrame(onFrame=core, row=2, column=1, sticky="n")
-result_area = AreaFrame(onFrame=core, row=2, column=2, sticky="n")
-
-# window for login
-logins_window = TopFrame()
-logins_area = AreaFrame(onFrame=logins_window.frame)
-
-# Trzeba to rozbić by każdy obiekt zawierał inne pobrane dane
-variable_json_File = ReadData()
-# readFile.file_list[0] json zmienne
-variable_json_File.read_from_file("App_file\zmienne.json", "json", "variable_json")
-# readFile.file_list[0]["Sciezka_portfel"],"txt",
-dollar_price = ReadData()
-dollar_price.read_from_file("App_file\zmienneApiDolar.json", "json", "dollar_price")
-
-session_user = {}
 
 
 def invested_area_ingredients():
@@ -158,8 +122,7 @@ def price_wallet(wallet: list) -> list:
         read_file = json.load(file)
         if read_file["Stable_price"]["Dolar"][1] != last_time:
             response = requests.get(read_file["url"], headers=read_file["headers"])
-            status_code = response.status_code
-            if status_code == 200:
+            if response.status_code == 200:
                 result = json.loads(response.text)
                 read_file["Stable_price"]["Dolar"] = (
                     result["quotes"]["USDPLN"],
@@ -168,7 +131,7 @@ def price_wallet(wallet: list) -> list:
                 file.seek(0, 0)
                 file.truncate()
                 json.dump(read_file, file, ensure_ascii=False, indent=4)
-
+    """Check if data charts is anavable"""
     pre_url = '","'.join(
         [
             f"{i[0]}USDT"
@@ -269,12 +232,10 @@ def refresh_result_data():
 
 def button_refresh_prices() -> None:
     top_area.objList[1].configure(text=f"Status na dzień: {time_now()}")
-    th.Thread(
-        target=middle_area.add_data_in_treeview(
-            middle_area.objList[1],
-            price_wallet(variable_json_File.file_dict["wallet_data"]),
-        )
-    ).start()
+    middle_area.add_data_in_treeview(
+        middle_area.objList[1],
+        price_wallet(variable_json_File.file_dict["wallet_data"]),
+    )
 
     refresh_result_data()
 
@@ -545,10 +506,7 @@ def chart_area_ingredients() -> None:
         pady=5,
         name="available_crypto",
     )
-    # old version
-    # bottom1_area.chart(krypto_wallet_list)
-
-    charts_area.chart_v2(krypto_wallet_list, variable_json_File)
+    chart_area_result(charts_area, krypto_wallet_list, variable_json_File)
 
 
 # bottom 2/3 area in main app
@@ -675,20 +633,50 @@ def result_area_ingredients() -> None:
     )
 
 
+# Not use
+def threed_middle_result_ingrednients():
+    middle_area_ingrednients()
+    result_area_ingredients()
+
+
 def main() -> None:
     logins_area_ingredients(logins_area, logins_window)
     top_area_ingredients()
-    th.Thread(target=middle_area_ingrednients()).start()
+    th.Thread(target=threed_middle_result_ingrednients()).start()
+
     # Wywala mi szerkość treeview headers
     th.Thread(target=chart_area_ingredients()).start()
-    # for test only
-    # purchers_area_ingredients()
+
     buttons_area_ingredients()
-    result_area_ingredients()
 
     root.resizable(False, False)
     root.mainloop()
 
 
 if __name__ == "__main__":
+    root = ttk.Window(themename="darkly")
+    style_conf(root)
+
+    core = ttk.Frame(root)
+    core.grid()
+    top_area = AreaFrame(
+        onFrame=core, row=0, column=0, columnspan=4, sticky="ew", padx=5
+    )
+    middle_area = AreaFrame(onFrame=core, row=1, column=0, columnspan=4)
+    charts_area = AreaFrame(onFrame=core, row=2, column=0, sticky="w")
+    buttons_area = AreaFrame(onFrame=core, row=2, column=1, sticky="n")
+    result_area = AreaFrame(onFrame=core, row=2, column=2, sticky="n")
+
+    # window for login
+    logins_window = TopFrame()
+    logins_area = AreaFrame(onFrame=logins_window.frame)
+
+    variable_json_File = ReadData()
+    variable_json_File.read_from_file("App_file\zmienne.json", "json", "variable_json")
+
+    dollar_price = ReadData()
+    dollar_price.read_from_file("App_file\zmienneApiDolar.json", "json", "dollar_price")
+    # print(variable_json_File.file_dict["wallet_data"])
+    session_user = {}
+
     main()
