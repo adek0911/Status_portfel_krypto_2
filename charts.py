@@ -110,9 +110,9 @@ def chart_area_result(area_frame_obj, krypto_list: list, variable_json: object):
                         add_to_chart_lists()
                     if j == 2 and i[0] > data_range[2]:
                         add_to_chart_lists()
-
                 chart_list[0].reverse()
                 chart_list[1].reverse()
+                # print(chart_list)
 
                 def mean():
                     result = sum(chart_list[1]) / len(chart_list[1])

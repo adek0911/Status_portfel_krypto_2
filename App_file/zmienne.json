@@ -1,7 +1,7 @@
 {
     "URL_Credentials": "https://adix0911.eu.pythonanywhere.com/",
     "Sciezka_Dane_wykres": "App_file\\Dane_wykresy.csv",
-    "Charts_data": "2023-10-22",
+    "Charts_data": "2023-10-30",
     "URL_krypto_price": "https://api.binance.com/api/v3/ticker/price?symbol=",
     "URL_krypto_price2": "https://api.binance.com/api/v3/ticker/price?symbols=",
     "URL_wykres_data": "https://www.cryptodatadownload.com/cdd/Binance_{i}_1h.csv",
