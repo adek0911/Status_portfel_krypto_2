@@ -1,7 +1,7 @@
 {
     "url": "https://api.apilayer.com/currency_data/live?source=USD&currencies=PLN",
     "headers": {
-        "apikey": "6b15175f982cc8f17cd7a628f87da5751ced9bf3"
+        "apikey": "***"
     },
     "Stable_price": {
         "Dolar": [
