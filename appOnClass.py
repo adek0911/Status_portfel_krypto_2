@@ -8,21 +8,29 @@ from Classes import AreaFrame, ReadData, TopFrame
 from details_wallet import purchers_area_ingredients
 from charts import chart_area_result
 from style_config import style_conf
+import Create_new_account
 
 # from Invested_plan import invested_area_ingredients
 
 
 def invested_area_ingredients(
     charts_area: AreaFrame,
+    top_area: AreaFrame,
     middle_area: AreaFrame,
+    result_area: AreaFrame,
     buttons_area: AreaFrame,
     variable_json_File: dict,
     dollar_price: dict,
     core: ttk.Frame,
+    button_status: dict,
 ):
-    def button_change_color(button: ttk.Button):
-        button.configure(style="Invest.TButton")  # "primary": "#375a7f",
-        pass
+    def button_change_color(button: ttk.Button, button_status: dict):
+        if button_status["button_pred_state"] == 0:
+            button.configure(style="Invest.TButton")  # "primary": "#375a7f",
+            button_status["button_pred_state"] = 1
+        else:
+            button.configure(style="primary.TButton")
+            button_status["button_pred_state"] = 0
 
     def count_predict():
         value = [invested_area.objList[1].get(), invested_area.objList[3].get()]
@@ -75,14 +83,16 @@ def invested_area_ingredients(
                 variable_json_File.file_dict["wallet_data"],
                 "txt",
             )
-            button_refresh_prices()
+            button_refresh_prices(
+                top_area, middle_area, result_area, variable_json_File
+            )
         else:
             msgbox.showwarning("Error", "Uzupełnij kolumnę z ceną")
 
     """Poniżej tabela z zaprezentowanymi zmianami, przycisk czyszczący predykcje oraz przycisk zapisujący w pliku"""
 
     charts_area.frame.grid_forget()
-    button_change_color(buttons_area.objList[2])
+    button_change_color(buttons_area.objList[2], button_status)
     # buttons_area.objList[2].configure(bg="red")
     invested_area = AreaFrame(onFrame=core, row=2, column=0, sticky="n")
     crypto_from_wallet = [i[0] for i in variable_json_File.file_dict["wallet_data"]]
@@ -427,7 +437,6 @@ def check_logins(
             area.objList[4].delete(0, "end")
     else:
         msgbox.showwarning("Error", "Nie został podany login lub hasło.")
-        area.objList[2].delete(0, "end")
         area.objList[4].delete(0, "end")
 
 
@@ -461,11 +470,19 @@ def logins_area_ingredients(
     area.text_display(text="Hasło: ", row=2, column=0)
     area.entry_display(justify="center", row=2, column=1, state="normal")
     area.button_display(
-        text="Zatwiedź",
+        text="Utwórz",
         width=10,
         row=3,
         column=0,
-        columnspan=2,
+        padx=5,
+        pady=5,
+        command=Create_new_account.create_account,
+    )
+    area.button_display(
+        text="Zatwiedź",
+        width=10,
+        row=3,
+        column=1,
         padx=5,
         pady=5,
         command=lambda: check_logins(
@@ -478,8 +495,9 @@ def logins_area_ingredients(
             root,
         ),
     )
-    window.frame.protocol("WM_DELETE_WINDOW", warning_mess)
-    window.frame.bind("<Return>", lambda event=None: area.objList[5].invoke())
+    window.frame.protocol("WM_DELETE_WINDOW", lambda: warning_mess(root))
+    window.frame.bind("<Return>", lambda: area.objList[5].invoke())
+
     # only for tests
     area.objList[2].insert(0, "Admin")
     area.objList[4].insert(0, "321")  # correct 321
@@ -536,14 +554,19 @@ def middle_area_ingrednients(
     middle_area.treeview_display(
         columns=column_tuple_price, headings_text=headings_list_price, row=1, column=1
     )
-    th.Thread(
-        target=middle_area.add_data_in_treeview(
-            middle_area.objList[1],
-            price_wallet(
-                variable_json_File.file_dict["wallet_data"], variable_json_File
-            ),
-        )
-    ).start()
+    middle_area.add_data_in_treeview(
+        middle_area.objList[1],
+        price_wallet(variable_json_File.file_dict["wallet_data"], variable_json_File),
+    )
+
+    # th.Thread(
+    #     target=middle_area.add_data_in_treeview(
+    #         middle_area.objList[1],
+    #         price_wallet(
+    #             variable_json_File.file_dict["wallet_data"], variable_json_File
+    #         ),
+    #     )
+    # ).start()
 
     def selected_choice(val: int):
         if val == 0:
@@ -580,12 +603,21 @@ def chart_area_ingredients(charts_area: AreaFrame, variable_json_File: dict) -> 
         pady=5,
         name="available_crypto",
     )
-    chart_area_result(charts_area, krypto_wallet_list, variable_json_File)
+    chart_area_result(charts_area)
 
 
 # bottom 2/3 area in main app
 def buttons_area_ingredients(
-    buttons_area: AreaFrame, top_area: AreaFrame, root: ttk.Window
+    buttons_area: AreaFrame,
+    top_area: AreaFrame,
+    root: ttk.Window,
+    charts_area: AreaFrame,
+    middle_area: AreaFrame,
+    variable_json_File: dict,
+    dollar_price: str,
+    core,
+    result_area: AreaFrame,
+    button_pred_status: dict,
 ) -> None:
     """Buttons with program options"""
     buttons_area.button_display(
@@ -608,7 +640,17 @@ def buttons_area_ingredients(
     # print(price_wallet(variable_json_File.file_dict["wallet_data"]))
     buttons_area.button_display(
         text="Plany inwestycyjne",
-        command=invested_area_ingredients,
+        command=lambda: invested_area_ingredients(
+            charts_area,
+            top_area,
+            middle_area,
+            result_area,
+            buttons_area,
+            variable_json_File,
+            dollar_price,
+            core,
+            button_pred_status,
+        ),
         row=2,
         column=0,
         padx=5,
@@ -709,18 +751,6 @@ def result_area_ingredients(result_area: AreaFrame, variable_json_File: dict) ->
     )
 
 
-# Not use
-def threed_middle_result_ingrednients(
-    middle_area: AreaFrame,
-    top_area: AreaFrame,
-    session_user: dict,
-    result_area: AreaFrame,
-    variable_json_File: dict,
-):
-    middle_area_ingrednients(middle_area, top_area, session_user, variable_json_File)
-    result_area_ingredients(result_area, variable_json_File)
-
-
 def main() -> None:
     # window for login
     root = ttk.Window(themename="darkly")
@@ -744,7 +774,7 @@ def main() -> None:
     dollar_price = ReadData()
     dollar_price.read_from_file("App_file\zmienneApiDolar.json", "json", "dollar_price")
     # print(variable_json_File.file_dict["wallet_data"])
-    session_user = {}
+    session_user = {"button_pred_state": 0}
 
     logins_area_ingredients(
         logins_area, logins_window, root, variable_json_File, session_user
@@ -757,16 +787,24 @@ def main() -> None:
         variable_json_File,
         session_user,
     )
-    th.Thread(
-        target=threed_middle_result_ingrednients(
-            middle_area, top_area, session_user, result_area, variable_json_File
-        )
-    ).start()
+    middle_area_ingrednients(middle_area, top_area, session_user, variable_json_File)
+    result_area_ingredients(result_area, variable_json_File)
+    buttons_area_ingredients(
+        buttons_area,
+        top_area,
+        root,
+        charts_area,
+        middle_area,
+        variable_json_File,
+        dollar_price,
+        core,
+        result_area,
+        session_user,
+    )
 
-    # Wywala mi szerkość treeview headers
+    # Wywala mi szerkość treeview headers na laptopie
     th.Thread(target=chart_area_ingredients(charts_area, variable_json_File)).start()
 
-    buttons_area_ingredients(buttons_area, top_area, root)
     root.resizable(False, False)
     root.mainloop()
 

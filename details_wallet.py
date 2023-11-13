@@ -26,50 +26,29 @@ def button_clear(entry_obj_list: list):
         entry_obj_list[i].delete(0, "end")
 
 
-def calculate_unit_price(file_data: list) -> list:
-    # Zastanowić się czy nie lepiej żeby zwracał listę/tuple jako odpowiedź
-    result_list = []
-    unique_name = []
-
-    for crypto in file_data:
-        if not crypto[1] in unique_name and crypto[2] == "Kupno":
-            unique_name.append(crypto[1])
-            result_list.append([])
-            result_list[unique_name.index(crypto[1])].extend(
-                [crypto[3], crypto[4], crypto[5]]
-            )
-        elif crypto[2] == "Kupno":
-            for i in range(3):
-                result_list[unique_name.index(crypto[1])][i] += crypto[i + 3].__round__(
-                    5
-                )
-        elif crypto[2] == "Sprzedaz":
-            for i in range(3):
-                result_list[unique_name.index(crypto[1])][i] -= crypto[i + 3].__round__(
-                    5
-                )
-
-    for i in range(len(result_list)):
-        if result_list[i][0] <= 0:
-            result_list[i][0] = 0
-            result_list[i][1] = 0
-        if result_list[i][2] != 0:
-            pln = (result_list[i][0] / result_list[i][2]).__round__(2)
-            dollar = (result_list[i][1] / result_list[i][2]).__round__(2)
-            result_list[i].extend([pln, dollar])
-
-    output_list = []
-    for i in range(len(result_list)):
-        if result_list[i][2] != 0:
-            output_list.append(
-                [
-                    unique_name[i],
-                    result_list[i][3],  # Cena jednostkowa pln
-                    result_list[i][4],  # Cena jednostokowa $
-                    result_list[i][2],  # Ilość
-                ]
-            )
-    return output_list
+def cal_unit_prices(history_trans_data: list) -> list:
+    result = [[]]
+    for val in history_trans_data:
+        if val[1] not in result[0]:
+            result[0].append(val[1])
+            result.append([val[1], 0, 0, 0])  # nazwa, cena jed. zł, cena jed. $, ilosc
+        if val[2] == "Kupno":
+            result[result[0].index(val[1]) + 1][1] += val[3]
+            result[result[0].index(val[1]) + 1][2] += val[4]
+            result[result[0].index(val[1]) + 1][3] += val[5]
+        if val[2] == "Sprzedaz":
+            result[result[0].index(val[1]) + 1][1] -= val[3]
+            result[result[0].index(val[1]) + 1][2] -= val[4]
+            result[result[0].index(val[1]) + 1][3] -= val[5]
+    result.pop(0)
+    for i in result:
+        if i[3] != 0:
+            i[1] = round(i[1] / i[3], 4)
+            i[2] = round(i[2] / i[3], 4)
+            i[3] = round(i[3], 4)
+        else:
+            result.pop(result.index(i))
+    return result
 
 
 # create v2 beather
@@ -297,7 +276,7 @@ def purchers_area_ingredients(choice_wallet: str, button_obj: ttk.Button) -> Non
 
         purchase_details_area.add_data_in_treeview(
             purchase_details_area.objList[15],
-            calculate_unit_price(purchase_details_data.file_data),
+            cal_unit_prices(purchase_details_data.file_data),
         )
 
     # unit price column and data
