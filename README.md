@@ -2,3 +2,4 @@
 App code is in file 'appOnClass.py'
 Every used class is in 'Classes.py'
 Data for local use is in folder 'Dane'
+Photo of app in folder Photo
