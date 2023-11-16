@@ -113,6 +113,11 @@ Po zrobieniu invest nie działają szczegóły zakupów
 
 17.10
     Napisać całe dzaiałanie przycisku założeń oraz wymyślić jak wrócić z założeń
+        Założenia będą przechowywane w lokalnych plikach aplikacji
+    *Naprawić gen wallet i wartości w bazie 
+    Stworzyć całą edycję w historii zakupu po stronie bazy oraz zaimplementować to działanie w aplikacji
+    stworzyć możliwość tworzenia konta 
+    Stworzyc możliwość dodawania i edytowania portfela
+    
     Naprawić problem z przelogowaniem
-    posprzątać kod
-    Naprawić gen wallet i wartości w bazie
+        Działa ale jest problem z formatowaniem treeview
