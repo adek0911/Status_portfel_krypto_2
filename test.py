@@ -1,12 +1,22 @@
 from datetime import datetime
 import requests
 import json
+import ttkbootstrap as ttk
 
-val = datetime.strptime("11/11/2023", "%d/%m/%Y").date()
-today = datetime.today().date()
-diff = today - val
-print(diff.days)
-# .strftime("%d/%m/%Y")
+"""Dont REMOVE request for all users"""
 
-with open("") as file:
-    file.truncate(0)
+
+# def req() -> dict:
+#     [
+#         {"Account_ID": 1, "Login": "Adrian", "Password": "321321"},
+#         {"Account_ID": 2, "Login": "Admin", "Password": "321"},
+#         {"Account_ID": 3, "Login": "Test", "Password": "Tests"},
+#     ]
+#     result: dict = requests.get(
+#         "https://adix0911.eu.pythonanywhere.com/authorization"
+#     ).json()
+#     return result
+
+tmp=ttk.Button()
+
+tmp.inv

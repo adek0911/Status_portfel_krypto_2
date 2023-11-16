@@ -120,3 +120,4 @@ Po zrobieniu invest nie działają szczegóły zakupów
     Stworzyc możliwość dodawania i edytowania portfela
     
     Naprawić problem z przelogowaniem
+        Działa ale jest problem z formatowaniem treeview
