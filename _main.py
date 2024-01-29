@@ -831,4 +831,51 @@ def main(root: ttk.Window) -> None:
 
 if __name__ == "__main__":
     root = ttk.Window(themename="darkly")
-    main(root)
+
+    style_conf(root)
+    logins_window = TopFrame()
+    logins_area = AreaFrame(onFrame=logins_window.frame)
+    core = ttk.Frame(root)
+    core.grid()
+
+    area_dict = create_main_area(core)
+    variable_json_File = ReadData()
+    variable_json_File.read_from_file("App_file\zmienne.json", "json", "variable_json")
+
+    dollar_price = ReadData()
+    dollar_price.read_from_file("App_file\zmienneApiDolar.json", "json", "dollar_price")
+    session_user = {"button_pred_state": 0}
+
+    logins_area_ingredients(
+        logins_area, logins_window, root, variable_json_File, session_user
+    )
+
+    top_area_ingredients(area_dict, variable_json_File, session_user)
+    middle_area_ingrednients(
+        area_dict["middle_area"],
+        area_dict["top_area"],
+        session_user,
+        variable_json_File,
+    )
+    result_area_ingredients(area_dict["result_area"], variable_json_File)
+    buttons_area_ingredients(
+        area_dict["buttons_area"],
+        area_dict["top_area"],
+        root,
+        area_dict["charts_area"],
+        area_dict["middle_area"],
+        variable_json_File,
+        dollar_price,
+        core,
+        area_dict["result_area"],
+        session_user,
+    )
+
+    # Wywala mi szerkość treeview headers na laptopie
+    th.Thread(
+        target=chart_area_ingredients(area_dict["charts_area"], variable_json_File)
+    ).start()
+    root.resizable(False, False)
+    root.mainloop()
+
+    # main(root)
