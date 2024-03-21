@@ -5,6 +5,10 @@ import ttkbootstrap as ttk
 import requests
 
 
+class ZeroDataFromDB(Exception):
+    pass
+
+
 def button_change_state(button: ttk.Button, window: ttk.Toplevel):
     button.configure(state="normal")
     window.destroy()
@@ -198,7 +202,7 @@ def purchers_area_ingredients(
         # refresh treeview
         purchase_details_area.add_data_in_treeview(
             purchase_details_area.objList[15],
-            cal_unit_prices(purchase_details_data.file_data),
+            cal_unit_prices(purchase_details_from_db.file_data),
         )
 
     def button_delete():
@@ -208,154 +212,154 @@ def purchers_area_ingredients(
             purchase_details_area.objList[3].selection()
         )
 
-    """Local variables"""
     try:
-        purchase_details_data = ReadFile(
-            f"Dane\Details_wallet_{choice_wallet}.txt", "txt"
-        )
         """Change to database data"""
-        responce = requests.get(f"{url}trans_curr/{selected_wallet_id}").json()
-        purchase_details_from_db_core = prep_data_from_db(responce)
+        responce = requests.get(f"{url}trans_curr/{selected_wallet_id}")
+        purchase_details_from_db_core = prep_data_from_db(responce.json())
         purchase_details_from_db = [val[:6] for val in purchase_details_from_db_core]
-    except FileNotFoundError:
-        msgbox.showinfo("Informacja", "Niestety nie ma szczegółów tego portfela.")
-
-    button_obj.configure(state="disable")
-    purchase_details_window = TopFrame()
-    purchase_details_window.frame.style.configure(
-        "primary.Treeview", rowheight=22, borderwidth=0
-    )
-    purchase_details_window.frame.protocol(
-        "WM_DELETE_WINDOW",
-        lambda: button_change_state(button_obj, purchase_details_window.frame),
-    )
-    purchase_details_area = AreaFrame(onFrame=purchase_details_window.frame)
-    status_transaction = ("BUY", "SALE")
-    purchase_details_area.text_display(
-        text="Data", row=0, column=0, columnspan=2
-    )  # obj_0
-    purchase_details_area.text_display(
-        text="Nazwa", row=0, column=2, columnspan=2
-    )  # obj_1
-    purchase_details_area.text_display(
-        text="Sprzedaż/Kupno", row=0, column=4, columnspan=2
-    )  # obj_2
-
-    filter_type = {"Data_filtr": 0, "Name_filtr": 1, "Status_filtr": 2}
-    column_change = 0
-    for key in filter_type:
-        purchase_details_area.combobox_display(
-            values=update_filtr(filter_type[key], purchase_details_from_db),
-            width=10,
-            row=1,
-            column=column_change,  # 0,2,4
-            columnspan=2,
-            name=key,
+        if len(purchase_details_from_db_core) == 0:
+            raise ZeroDataFromDB
+    except ConnectionError:
+        msgbox.showinfo("Informacja", "Niestety nie udało się połączyć z serwerem.")
+    except ZeroDataFromDB:
+        msgbox.showinfo("Informacja", "Niestety brak danych dla tego portfela.")
+    else:
+        button_obj.configure(state="disable")
+        purchase_details_window = TopFrame()
+        purchase_details_window.frame.style.configure(
+            "primary.Treeview", rowheight=22, borderwidth=0
         )
-        column_change += 2
-        purchase_details_area.dict_combo[key].bind(
-            "<<ComboboxSelected>>",
-            lambda _: sort_treeView(
-                purchase_details_area.dict_combo,
-                purchase_details_from_db[:6],
-                purchase_details_area,
+        purchase_details_window.frame.protocol(
+            "WM_DELETE_WINDOW",
+            lambda: button_change_state(button_obj, purchase_details_window.frame),
+        )
+        purchase_details_area = AreaFrame(onFrame=purchase_details_window.frame)
+        status_transaction = ("BUY", "SALE")
+        purchase_details_area.text_display(
+            text="Data", row=0, column=0, columnspan=2
+        )  # obj_0
+        purchase_details_area.text_display(
+            text="Nazwa", row=0, column=2, columnspan=2
+        )  # obj_1
+        purchase_details_area.text_display(
+            text="Sprzedaż/Kupno", row=0, column=4, columnspan=2
+        )  # obj_2
+
+        filter_type = {"Data_filtr": 0, "Name_filtr": 1, "Status_filtr": 2}
+        column_change = 0
+        for key in filter_type:
+            purchase_details_area.combobox_display(
+                values=update_filtr(filter_type[key], purchase_details_from_db),
+                width=10,
+                row=1,
+                column=column_change,  # 0,2,4
+                columnspan=2,
+                name=key,
+            )
+            column_change += 2
+            purchase_details_area.dict_combo[key].bind(
+                "<<ComboboxSelected>>",
+                lambda _: sort_treeView(
+                    purchase_details_area.dict_combo,
+                    purchase_details_from_db[:6],
+                    purchase_details_area,
+                ),
+            )
+
+        tree_view_headers = [
+            "Data",
+            "Nazwa",
+            "Sprzedaż/ Kupno",
+            "Cena zł",
+            "Cena $",
+            "Ilość",
+        ]
+
+        purchase_details_area.treeview_display(
+            columns=tuple(tree_view_headers),
+            headings_text=tree_view_headers,
+            row=2,
+            column=0,
+            columnspan=6,
+        )  # obj_3
+        # add data from file , create new instant and download data
+
+        # 5 entry
+        for i in range(6):  # obj_4-8
+            if i != 2:
+                purchase_details_area.entry_display(row=3, column=i)
+            else:
+                """on index 2 is combobox"""
+                purchase_details_area.combobox_display(
+                    values=status_transaction,
+                    row=3,
+                    column=i,
+                    width=10,
+                    name="combo_status_transaction",
+                )
+
+        # 6 button
+        button_names = (
+            "Wyczyść",
+            "Wybierz",
+            "Zamień",
+            "Dodaj",
+            "Usuń",
+            "Aktualizuj",
+        )
+
+        purchase_details_area.button_display(
+            text=button_names[0],
+            row=4,
+            column=0,
+            command=lambda: button_clear(purchase_details_area.objList),
+        )
+        purchase_details_area.button_display(
+            text=button_names[1],
+            row=4,
+            column=1,
+            command=lambda: button_selected(
+                purchase_details_area.objList,
+                purchase_details_area.dict_combo["combo_status_transaction"],
+            ),
+        )
+        purchase_details_area.button_display(
+            text=button_names[2], row=4, column=2, command=button_change
+        )
+        purchase_details_area.button_display(
+            text=button_names[3], row=4, column=3, command=button_add
+        )
+        purchase_details_area.button_display(
+            text=button_names[4], row=4, column=4, command=button_delete
+        )
+        purchase_details_area.button_display(
+            text=button_names[5],
+            row=4,
+            column=5,
+            command=lambda: button_update_wallet(
+                treeview_values=purchase_details_area.objList[3],
+                db_data=purchase_details_from_db_core,
+                url=url,
             ),
         )
 
-    tree_view_headers = [
-        "Data",
-        "Nazwa",
-        "Sprzedaż/ Kupno",
-        "Cena zł",
-        "Cena $",
-        "Ilość",
-    ]
+        # treeview with unit price
+        unit_price_column = ["Nazwa", "Cena jedn. zł", "Cena jedn. $", "Ilość"]
+        purchase_details_area.treeview_display(
+            columns=tuple(unit_price_column),
+            headings_text=unit_price_column,
+            row=5,
+            column=0,
+            columnspan=6,
+        )
 
-    purchase_details_area.treeview_display(
-        columns=tuple(tree_view_headers),
-        headings_text=tree_view_headers,
-        row=2,
-        column=0,
-        columnspan=6,
-    )  # obj_3
-    # add data from file , create new instant and download data
+        purchase_details_area.add_data_in_treeview(
+            purchase_details_area.objList[3], purchase_details_from_db, "txt", 10
+        )
 
-    # 5 entry
-    for i in range(6):  # obj_4-8
-        if i != 2:
-            purchase_details_area.entry_display(row=3, column=i)
-        else:
-            """on index 2 is combobox"""
-            purchase_details_area.combobox_display(
-                values=status_transaction,
-                row=3,
-                column=i,
-                width=10,
-                name="combo_status_transaction",
-            )
-
-    # 6 button
-    button_names = (
-        "Wyczyść",
-        "Wybierz",
-        "Zamień",
-        "Dodaj",
-        "Usuń",
-        "Aktualizuj",
-    )
-
-    purchase_details_area.button_display(
-        text=button_names[0],
-        row=4,
-        column=0,
-        command=lambda: button_clear(purchase_details_area.objList),
-    )
-    purchase_details_area.button_display(
-        text=button_names[1],
-        row=4,
-        column=1,
-        command=lambda: button_selected(
-            purchase_details_area.objList,
-            purchase_details_area.dict_combo["combo_status_transaction"],
-        ),
-    )
-    purchase_details_area.button_display(
-        text=button_names[2], row=4, column=2, command=button_change
-    )
-    purchase_details_area.button_display(
-        text=button_names[3], row=4, column=3, command=button_add
-    )
-    purchase_details_area.button_display(
-        text=button_names[4], row=4, column=4, command=button_delete
-    )
-    purchase_details_area.button_display(
-        text=button_names[5],
-        row=4,
-        column=5,
-        command=lambda: button_update_wallet(
-            treeview_values=purchase_details_area.objList[3],
-            db_data=purchase_details_from_db_core,
-            url=url,
-        ),
-    )
-
-    # treeview with unit price
-    unit_price_column = ["Nazwa", "Cena jedn. zł", "Cena jedn. $", "Ilość"]
-    purchase_details_area.treeview_display(
-        columns=tuple(unit_price_column),
-        headings_text=unit_price_column,
-        row=5,
-        column=0,
-        columnspan=6,
-    )
-
-    purchase_details_area.add_data_in_treeview(
-        purchase_details_area.objList[3], purchase_details_from_db, "txt", 10
-    )
-
-    purchase_details_area.add_data_in_treeview(
-        purchase_details_area.objList[15],
-        cal_unit_prices(purchase_details_from_db),
-    )
+        purchase_details_area.add_data_in_treeview(
+            purchase_details_area.objList[15],
+            cal_unit_prices(purchase_details_from_db),
+        )
 
     # unit price column and data

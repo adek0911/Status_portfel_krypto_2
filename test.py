@@ -4,6 +4,8 @@ import json
 import ttkbootstrap as ttk
 from pprint import pprint
 from datetime import timedelta
+import time as t
+import threading as th
 
 """Dont REMOVE request for all users"""
 
@@ -108,8 +110,11 @@ def req5():
     print(responce)
 
 
-def req6():
-
+def req6_authorization():
+    responce = requests.get(f"{URL}authorization/Admin")
+    tmp = responce.json()
+    print(responce.status_code)
+    print(tmp)
     pass
 
 
@@ -118,10 +123,37 @@ def req6():
 # print(f"[{sep: <10}]")
 # print(f"[{sep: ^10}]")
 
-req3()
 
 # test = {"dupa": "123", "Tralalala": 1234, "Imie": None}
 
 # for i in test:
 #     if test[i] == None:
 #         print(i)
+
+# req6_authorization()
+
+
+def test():
+    t.sleep(1)
+    print("test")
+
+
+def test2():
+    t.sleep(2)
+    print("test2")
+
+
+def test3():
+    t.sleep(2)
+    print("test3")
+
+
+def test2_3():
+    test2()
+    test3()
+
+
+# th.Thread(target=test).run()
+th_test2_3 = th.Thread(target=test2_3)
+th_test3 = th.Thread(target=test3)
+test()
