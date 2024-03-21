@@ -286,20 +286,25 @@ def log_out(root: ttk.Window):
     main(root)
 
 
+"""Dont work need change in aut variable """
+
+
 def downlad_wallet_values_from_database(
-    current_wallet: str, ac_id: int, variable_json_File: dict
+    current_wallet: str, session_user: dict, variable_json_File: dict
 ):
     url_credentials: str = variable_json_File.file_dict["variable_json"][
         "URL_Credentials"
     ]
+    """get all wallet on this account"""
+    response = requests.get(
+        url_credentials + f"wallets/{session_user['Account_ID']}"
+    ).json()
 
-    # get all wallet on this account
-    response = requests.get(url_credentials + f"wallets/{ac_id}").json()
-    for i in response:
-        if i["Name"] == current_wallet:
-            wallet_id = i["Id"]  # take only current
-            break
+    """Get id of this wallet by name"""
+    wallet_id: int = [val["Id"] for val in response if val["Name"] == current_wallet][0]
 
+    """Add Actual see wallet id in session_user"""
+    session_user["selected_wallet_id"] = wallet_id
     # get wallet values and format data
     response: list[dict] = requests.get(
         url_credentials + f"wallet_detail/{wallet_id}"
@@ -323,7 +328,7 @@ def refresh_wallet(
     # czyszczenie tabeli portfel
     downlad_wallet_values_from_database(
         top_area.dict_combo["wallet_list"].get(),
-        session_user["Account_ID"],
+        session_user,
         variable_json_File,
     )
 
@@ -527,7 +532,7 @@ def middle_area_ingrednients(
     session_user: dict,
     variable_json_File: dict,
 ) -> None:
-    """Wallet data in treeView and calculation of wallet"""
+    """Wallet data in treeView and calculation of wallet data"""
     column_tuple_wallet = ("Nazwa", "Cena zl", "Cena $", "Ilość")
     headings_list_wallet = ["Nazwa waluty", "Cena zakupu zł", "Cena zakupu $", "Ilość"]
     middle_area.treeview_display(
@@ -535,23 +540,14 @@ def middle_area_ingrednients(
     )
     downlad_wallet_values_from_database(
         top_area.dict_combo["wallet_list"].get(),
-        session_user["Account_ID"],
+        session_user,
         variable_json_File,
     )
 
     middle_area.add_data_in_treeview(
-        middle_area.objList[0], variable_json_File.file_dict["wallet_data"], "txt"
+        middle_area.objList[0], variable_json_File.file_dict["wallet_data"], type="txt"
     )
 
-    column_tuple_price = (
-        "Cena zl",
-        "Cena $",
-        "Wartość zl",
-        "Wartość $",
-        "Zysk/Strata zl",
-        "Zysk/Strata $",
-        "Zysk/Strata %",
-    )
     headings_list_price = [
         "Cena akt. zł",
         "Cena akt. $",
@@ -561,6 +557,7 @@ def middle_area_ingrednients(
         "Zysk/ Strata $",
         "Zysk/ Strata %",
     ]
+    column_tuple_price = tuple(headings_list_price)
     middle_area.treeview_display(
         columns=column_tuple_price, headings_text=headings_list_price, row=1, column=1
     )
@@ -638,8 +635,10 @@ def buttons_area_ingredients(
         pady=15,
         width=18,
         command=lambda: purchers_area_ingredients(
-            top_area.dict_combo["wallet_list"].get(),
-            buttons_area.objList[0],  # wallet_name, button obj
+            choice_wallet=top_area.dict_combo["wallet_list"].get(),
+            button_obj=buttons_area.objList[0],
+            url=variable_json_File.file_dict["variable_json"]["URL_Credentials"],
+            selected_wallet_id=session_user["selected_wallet_id"],
         ),
     )
     """Do nothing in future update wallet data if some was added in detail wallet"""
@@ -766,7 +765,7 @@ def result_area_ingredients(result_area: AreaFrame, variable_json_File: dict) ->
     )
 
 
-def create_main_area(frame: ttk.Frame):
+def create_main_area(frame: ttk.Frame) -> dict[AreaFrame]:
     area_dict = {}
     area_dict["top_area"] = AreaFrame(
         onFrame=frame, row=0, column=0, columnspan=4, sticky="ew", padx=5
@@ -871,6 +870,7 @@ if __name__ == "__main__":
         session_user,
     )
 
+    """TEMP"""
     # Wywala mi szerkość treeview headers na laptopie
     th.Thread(
         target=chart_area_ingredients(area_dict["charts_area"], variable_json_File)
