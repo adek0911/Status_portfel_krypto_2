@@ -16,7 +16,7 @@ import tkinter.messagebox as msgbox
 class AreaFrame:
     def __init__(self, height=100, width=100, onFrame=ttk.Frame, **kwargs) -> None:
         self.objList = []
-        self.dict_combo = {}
+        self.dict_combo: dict[ttk.Combobox] = {}
         self.height = height
         self.width = width
         self.frame = ttk.Frame(onFrame, width=self.width, height=self.height)
@@ -81,8 +81,10 @@ class AreaFrame:
         # treeview.configure(hea)
         self.objList.append(treeview)
 
-    def add_data_in_treeview(self, objkey: ttk.Treeview, dataObj: list, type: str = ""):
-        """Clear treeview, insert data in treeview"""
+    def add_data_in_treeview(
+        self, objkey: ttk.Treeview, dataObj: list, type: str = "", round_numbers=4
+    ):
+        """Clear treeview"""
         for i in objkey.get_children():
             objkey.delete(i)
 
@@ -91,7 +93,7 @@ class AreaFrame:
             for i in range(len(dataObj)):
                 for j in range(1, len(dataObj[i])):
                     try:
-                        dataObj[i][j] = float(dataObj[i][j]).__round__(4)
+                        dataObj[i][j] = float(dataObj[i][j]).__round__(round_numbers)
                     except ValueError:
                         dataObj[i][j] = str(dataObj[i][j])
         """Insert data in treeview"""
@@ -182,7 +184,6 @@ class AreaFrame:
         )
         combobox.grid(row=row, column=column, **kwargs)
         combobox.current(0)
-
         self.dict_combo[f"{name}"] = combobox
 
     def entry_display(

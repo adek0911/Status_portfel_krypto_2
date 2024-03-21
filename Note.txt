@@ -112,7 +112,7 @@ Stworzyć listę dostępnych walut zamiast nie dostępnych, pobrać listę możl
 Po zrobieniu invest nie działają szczegóły zakupów
 
 17.10
-    Napisać całe dzaiałanie przycisku założeń oraz wymyślić jak wrócić z założeń
+    Napisać całe dzaiałanie przycisku założeń oraz wymyślić jak wrócić z założeń    Done
         Założenia będą przechowywane w lokalnych plikach aplikacji
     *Naprawić gen wallet i wartości w bazie 
     Stworzyć całą edycję w historii zakupu po stronie bazy oraz zaimplementować to działanie w aplikacji

@@ -11,6 +11,7 @@ from style_config import style_conf
 import Create_new_account
 
 # from Invested_plan import invested_area_ingredients
+import time as t
 
 
 def invested_area_ingredients(
@@ -286,20 +287,25 @@ def log_out(root: ttk.Window):
     main(root)
 
 
+"""Dont work need change in aut variable """
+
+
 def downlad_wallet_values_from_database(
-    current_wallet: str, ac_id: int, variable_json_File: dict
+    current_wallet: str, session_user: dict, variable_json_File: dict
 ):
     url_credentials: str = variable_json_File.file_dict["variable_json"][
         "URL_Credentials"
     ]
+    """get all wallet on this account"""
+    response = requests.get(
+        url_credentials + f"wallets/{session_user['Account_ID']}"
+    ).json()
 
-    # get all wallet on this account
-    response = requests.get(url_credentials + f"wallets/{ac_id}").json()
-    for i in response:
-        if i["Name"] == current_wallet:
-            wallet_id = i["Id"]  # take only current
-            break
+    """Get id of this wallet by name"""
+    wallet_id: int = [val["Id"] for val in response if val["Name"] == current_wallet][0]
 
+    """Add Actual see wallet id in session_user"""
+    session_user["selected_wallet_id"] = wallet_id
     # get wallet values and format data
     response: list[dict] = requests.get(
         url_credentials + f"wallet_detail/{wallet_id}"
@@ -323,7 +329,7 @@ def refresh_wallet(
     # czyszczenie tabeli portfel
     downlad_wallet_values_from_database(
         top_area.dict_combo["wallet_list"].get(),
-        session_user["Account_ID"],
+        session_user,
         variable_json_File,
     )
 
@@ -348,26 +354,17 @@ def refresh_wallet(
 
 # Top area in main app
 def top_area_ingredients(
-    area_dict: dict,
+    area_obj: AreaFrame,
     variable_json_File: dict,
     session_user: dict,
 ) -> None:
     """List of wallets, current data and button with refresh corrent value of invest"""
-
-    url_credentials: str = variable_json_File.file_dict["variable_json"][
-        "URL_Credentials"
-    ]
-    responde = requests.get(
-        url_credentials + f"wallets/{session_user['Account_ID']}"
-    ).json()
-
-    wallet_lists = [i["Name"] for i in responde]
     # print(wallet_lists) #Testsd
-    area_dict["top_area"].text_display(
+    area_obj.text_display(
         f"Wybierz portfel:", row=0, column=0, padx=5, style="11_label.TLabel"
     )
-    area_dict["top_area"].combobox_display(
-        values=wallet_lists,
+    area_obj.combobox_display(
+        values=session_user["wallet_names"],
         width=12,
         row=0,
         column=1,
@@ -375,7 +372,7 @@ def top_area_ingredients(
         pady=10,
         name="wallet_list",
     )
-    area_dict["top_area"].dict_combo["wallet_list"].bind(
+    area_obj.dict_combo["wallet_list"].bind(
         "<<ComboboxSelected>>",
         lambda _: refresh_wallet(
             area_dict["top_area"],
@@ -386,7 +383,7 @@ def top_area_ingredients(
             session_user,
         ),
     )
-    area_dict["top_area"].text_display(
+    area_obj.text_display(
         f"Status na dzień: {time_now()}",
         row=0,
         column=2,
@@ -395,7 +392,7 @@ def top_area_ingredients(
         padx=95,
         style="12_label.TLabel",
     )
-    area_dict["top_area"].text_display(
+    area_obj.text_display(
         f"Odśwież wyliczenia portfela: ",
         row=0,
         column=3,
@@ -403,7 +400,7 @@ def top_area_ingredients(
         padx=5,
         style="11_label.TLabel",
     )
-    area_dict["top_area"].button_display(
+    area_obj.button_display(
         "Odśwież",
         row=0,
         column=4,
@@ -435,10 +432,11 @@ def check_logins(
     responde = requests.get(url_credentials + f"authorization/{login}")
 
     if len(login) > 0 and len(password) > 0 and responde.status_code == 200:
-        responde = responde.json()
-        if responde["Password"] == password:
+        responde_dict = responde.json()
+        if responde_dict["Password"] == password:
             session_user["login"] = login
-            session_user["Account_ID"] = responde["Account_ID"]
+            session_user["Account_ID"] = responde_dict["Account_ID"]
+            session_user["wallet_names"] = responde_dict["wallet_names"]
             root.deiconify()
             window.frame.destroy()
         else:
@@ -509,6 +507,8 @@ def logins_area_ingredients(
     window.frame.bind("<Return>", lambda x: area.objList[6].invoke())
 
     # only for tests
+    area.objList[2].insert(0, "Admin")
+    area.objList[4].insert(0, "321")  # correct 321
     # check_logins(logins_area.objList[2].get(), logins_area.objList[4].get())
     root.withdraw()
     # hide window
@@ -525,30 +525,14 @@ def middle_area_ingrednients(
     session_user: dict,
     variable_json_File: dict,
 ) -> None:
-    """Wallet data in treeView and calculation of wallet"""
-    column_tuple_wallet = ("Nazwa", "Cena zl", "Cena $", "Ilość")
+    """Wallet data in treeView and calculation of wallet data"""
     headings_list_wallet = ["Nazwa waluty", "Cena zakupu zł", "Cena zakupu $", "Ilość"]
+
     middle_area.treeview_display(
-        columns=column_tuple_wallet, headings_text=headings_list_wallet, row=1, column=0
-    )
-    downlad_wallet_values_from_database(
-        top_area.dict_combo["wallet_list"].get(),
-        session_user["Account_ID"],
-        variable_json_File,
-    )
-
-    middle_area.add_data_in_treeview(
-        middle_area.objList[0], variable_json_File.file_dict["wallet_data"], "txt"
-    )
-
-    column_tuple_price = (
-        "Cena zl",
-        "Cena $",
-        "Wartość zl",
-        "Wartość $",
-        "Zysk/Strata zl",
-        "Zysk/Strata $",
-        "Zysk/Strata %",
+        columns=tuple(headings_list_wallet),
+        headings_text=headings_list_wallet,
+        row=1,
+        column=0,
     )
     headings_list_price = [
         "Cena akt. zł",
@@ -560,21 +544,38 @@ def middle_area_ingrednients(
         "Zysk/ Strata %",
     ]
     middle_area.treeview_display(
-        columns=column_tuple_price, headings_text=headings_list_price, row=1, column=1
+        columns=tuple(headings_list_price),
+        headings_text=headings_list_price,
+        row=1,
+        column=1,
     )
+
+    downlad_wallet_values_from_database(
+        top_area.dict_combo["wallet_list"].get(),
+        session_user,
+        variable_json_File,
+    )
+
+    middle_area.add_data_in_treeview(
+        middle_area.objList[0],
+        variable_json_File.file_dict["wallet_data"],
+        type="txt",
+    )
+
     middle_area.add_data_in_treeview(
         middle_area.objList[1],
         price_wallet(variable_json_File.file_dict["wallet_data"], variable_json_File),
     )
-
-    # th.Thread(
+    t.sleep(2)
+    # th_add_treeview = th.Thread(
     #     target=middle_area.add_data_in_treeview(
     #         middle_area.objList[1],
     #         price_wallet(
     #             variable_json_File.file_dict["wallet_data"], variable_json_File
     #         ),
     #     )
-    # ).start()
+    # )
+    # th_add_treeview.start()
 
     def selected_choice(val: int):
         if val == 0:
@@ -636,8 +637,10 @@ def buttons_area_ingredients(
         pady=15,
         width=18,
         command=lambda: purchers_area_ingredients(
-            top_area.dict_combo["wallet_list"].get(),
-            buttons_area.objList[0],  # wallet_name, button obj
+            choice_wallet=top_area.dict_combo["wallet_list"].get(),
+            button_obj=buttons_area.objList[0],
+            url=variable_json_File.file_dict["variable_json"]["URL_Credentials"],
+            selected_wallet_id=session_user["selected_wallet_id"],
         ),
     )
     """Do nothing in future update wallet data if some was added in detail wallet"""
@@ -764,7 +767,7 @@ def result_area_ingredients(result_area: AreaFrame, variable_json_File: dict) ->
     )
 
 
-def create_main_area(frame: ttk.Frame):
+def create_main_area(frame: ttk.Frame) -> dict[AreaFrame]:
     area_dict = {}
     area_dict["top_area"] = AreaFrame(
         onFrame=frame, row=0, column=0, columnspan=4, sticky="ew", padx=5
@@ -797,36 +800,112 @@ def main(root: ttk.Window) -> None:
     logins_area_ingredients(
         logins_area, logins_window, root, variable_json_File, session_user
     )
+    try:
+        top_area_ingredients(area_dict, variable_json_File, session_user)
+        middle_area_ingrednients(
+            area_dict["middle_area"],
+            area_dict["top_area"],
+            session_user,
+            variable_json_File,
+        )
+        result_area_ingredients(area_dict["result_area"], variable_json_File)
+        buttons_area_ingredients(
+            area_dict["buttons_area"],
+            area_dict["top_area"],
+            root,
+            area_dict["charts_area"],
+            area_dict["middle_area"],
+            variable_json_File,
+            dollar_price,
+            core,
+            area_dict["result_area"],
+            session_user,
+        )
 
-    top_area_ingredients(area_dict, variable_json_File, session_user)
-    middle_area_ingrednients(
-        area_dict["middle_area"],
-        area_dict["top_area"],
-        session_user,
-        variable_json_File,
-    )
-    result_area_ingredients(area_dict["result_area"], variable_json_File)
-    buttons_area_ingredients(
-        area_dict["buttons_area"],
-        area_dict["top_area"],
-        root,
-        area_dict["charts_area"],
-        area_dict["middle_area"],
-        variable_json_File,
-        dollar_price,
-        core,
-        area_dict["result_area"],
-        session_user,
-    )
+    except KeyError as e:
+        print(f"Missing {e} login unauthorized")
+    else:
 
-    # Wywala mi szerkość treeview headers na laptopie
-    th.Thread(
-        target=chart_area_ingredients(area_dict["charts_area"], variable_json_File)
-    ).start()
-    root.resizable(False, False)
-    root.mainloop()
+        """TEMP"""
+        # Wywala mi szerkość treeview headers na laptopie
+        th.Thread(
+            target=chart_area_ingredients(area_dict["charts_area"], variable_json_File)
+        ).start()
+        root.resizable(False, False)
+        root.mainloop()
 
 
 if __name__ == "__main__":
     root = ttk.Window(themename="darkly")
-    main(root)
+    root.resizable(False, False)
+    style_conf(root)
+
+    logins_window = TopFrame()
+    logins_area = AreaFrame(onFrame=logins_window.frame)
+
+    core = ttk.Frame(root)
+    core.grid()
+    area_dict = create_main_area(core)
+    variable_json_File = ReadData()
+    variable_json_File.read_from_file("App_file\zmienne.json", "json", "variable_json")
+
+    dollar_price = ReadData()
+    dollar_price.read_from_file("App_file\zmienneApiDolar.json", "json", "dollar_price")
+    session_user = {"button_pred_state": 0}
+
+    logins_area_ingredients(
+        logins_area, logins_window, root, variable_json_File, session_user
+    )
+    try:
+        top_area_ingredients(area_dict["top_area"], variable_json_File, session_user)
+        # th_top = th.Thread(
+        #     target=top_area_ingredients,
+        #     daemon=False,
+        #     args=(area_dict, variable_json_File, session_user),
+        # ).run()
+        # th_middle = th.Thread(
+        #     target=middle_area_ingrednients,
+        #     daemon=False,
+        #     args=(
+        #         area_dict["middle_area"],
+        #         area_dict["top_area"],
+        #         session_user,
+        #         variable_json_File,
+        #     ),
+        # ).run()
+        middle_area_ingrednients(
+            area_dict["middle_area"],
+            area_dict["top_area"],
+            session_user,
+            variable_json_File,
+        ),
+
+        result_area_ingredients(area_dict["result_area"], variable_json_File)
+        buttons_area_ingredients(
+            area_dict["buttons_area"],
+            area_dict["top_area"],
+            root,
+            area_dict["charts_area"],
+            area_dict["middle_area"],
+            variable_json_File,
+            dollar_price,
+            core,
+            area_dict["result_area"],
+            session_user,
+        )
+
+    except KeyError as e:
+        pass
+    else:
+
+        """TEMP"""
+        # Wywala mi szerkość treeview headers na laptopie
+        th.Thread(
+            target=chart_area_ingredients,
+            args=(area_dict["charts_area"], variable_json_File),
+            daemon=True,
+        ).run()
+        root.resizable(False, False)
+        root.mainloop()
+
+    # main(root)

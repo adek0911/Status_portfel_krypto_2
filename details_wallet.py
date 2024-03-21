@@ -2,6 +2,11 @@ import tkinter.messagebox as msgbox
 from datetime import datetime
 from Classes import AreaFrame, ReadFile, TopFrame
 import ttkbootstrap as ttk
+import requests
+
+
+class ZeroDataFromDB(Exception):
+    pass
 
 
 def button_change_state(button: ttk.Button, window: ttk.Toplevel):
@@ -32,16 +37,17 @@ def cal_unit_prices(history_trans_data: list) -> list:
         if val[1] not in result[0]:
             result[0].append(val[1])
             result.append([val[1], 0, 0, 0])  # nazwa, cena jed. zł, cena jed. $, ilosc
-        if val[2] == "Kupno":
+        if val[2] == "BUY":
             result[result[0].index(val[1]) + 1][1] += val[3]
             result[result[0].index(val[1]) + 1][2] += val[4]
             result[result[0].index(val[1]) + 1][3] += val[5]
-        if val[2] == "Sprzedaz":
+        if val[2] == "SALE":
             result[result[0].index(val[1]) + 1][1] -= val[3]
             result[result[0].index(val[1]) + 1][2] -= val[4]
             result[result[0].index(val[1]) + 1][3] -= val[5]
     result.pop(0)
     for i in result:
+        i[3] = i[3].__round__(4)
         if i[3] != 0:
             i[1] = round(i[1] / i[3], 4)
             i[2] = round(i[2] / i[3], 4)
@@ -110,44 +116,113 @@ def button_selected(obj_list: list, dic_obj: ttk.Combobox):
     dic_obj.set(status)
 
 
-def purchers_area_ingredients(choice_wallet: str, button_obj: ttk.Button) -> None:
+def prep_data_from_db(data_db: list[dict]):
+    result = []
+    for val in data_db:
+        temp = []
+        temp.append(
+            datetime.strptime(val["date_purchase"], "%Y-%m-%d").strftime("%d.%m.%Y")
+        )
+        temp.append(val["name_currency"])
+        temp.append(
+            val["status_of_purchase"].replace("}", "").replace("{", "").replace("'", "")
+        )
+        temp.append(f"{val['price_PLN']}")
+        temp.append(f"{val['price_dollar']}")
+        temp.append(f"{val['quantity']}")
+        temp.append({"Id": val["Id"]})
+        result.append(temp)
+
+    return result
+
+
+"""TEMP"""
+
+
+def save_in_file(path: str, detail_wallet: list):
+    prep_data = []
+    for i, val in enumerate(detail_wallet):
+        if i == len(detail_wallet) - 1:
+            prep_data.append(",".join(val))
+        else:
+            prep_data.append(",".join(val) + "\n")
+    with open(path, "w", encoding="UTF-8") as file:
+        file.writelines(prep_data)
+
+
+def button_update_wallet(treeview_values: list, db_data: list, url: str):
+    # result = []
+    # for i in purchase_details_area.objList[3].get_children():
+    #     result.append(purchase_details_area.objList[3].item(i)["values"])
+
+    # save_in_file(f"Dane\Details_wallet_{choice_wallet}.txt", result)
+    """Add popup button for confirm"""
+
+    """Check if in treeview is some changes:
+    maybe check button press or just check for change"""
+    treeview_values = [
+        treeview_values.item(values)["values"]
+        for values in treeview_values.get_children()
+    ]  # [['04.01.2021', 'BCH', 'BUY', '10.0', '2.7', '0.00600648'], ['1...
+    # print(db_data) [['04.01.2021', 'BCH', 'BUY', '10.0', '2.7', '0.00600648', {'Id': 1}], ['...
+    # TODO 1 all below
+    """If something is diffrent change this data add if is need to to database"""
+    """Count if something is change value for wallet"""
+    """Change wallet data in database """
+    # in test file
+    """Active refresh method on main window app to update data for this wallet"""
+    pass
+
+
+def purchers_area_ingredients(
+    choice_wallet: str, button_obj: ttk.Button, url: str, selected_wallet_id: int
+) -> None:
+
     def button_change():
         # Warning if wont change data
         change_data = []
-        for i in range(4, 10):
+        for i in range(4, 9):
             change_data.append(purchase_details_area.objList[i].get())
-
+        change_data.insert(
+            2, purchase_details_area.dict_combo["combo_status_transaction"].get()
+        )
         purchase_details_area.objList[3].item(
             purchase_details_area.objList[3].selection(), values=change_data
         )
-        pass
 
     def button_add():
         # create data control
-        add_data = []
-        for i in range(4, 10):
-            add_data.append(purchase_details_area.objList[i].get())
+        add_data = [purchase_details_area.objList[val].get() for val in range(4, 9)]
+        add_data.insert(
+            2, purchase_details_area.dict_combo["combo_status_transaction"].get()
+        )
+        # add_data ==['11.02.2021', 'BUY', 'Kupno', '10000.0', '2702.7', '1.4811']
         purchase_details_area.objList[3].insert("", "end", values=add_data)
-        button_clear()
+        """Add data to file rebild for api and add in database"""
+        # refresh treeview
+        purchase_details_area.add_data_in_treeview(
+            purchase_details_area.objList[15],
+            cal_unit_prices(purchase_details_from_db.file_data),
+        )
 
     def button_delete():
+        """Add a popup window to confirm this delete"""
+        # TODO popup window
         purchase_details_area.objList[3].delete(
             purchase_details_area.objList[3].selection()
         )
 
-        # add delete from file
-        pass
-
-    def button_update_wallet():
-        pass
-
     try:
-        purchase_details_data = ReadFile(
-            f"Dane\Details_wallet_{choice_wallet}.txt", "txt"
-        )
-
-    except FileNotFoundError:
-        msgbox.showinfo("Informacja", "Niestety nie ma szczegółów tego portfela.")
+        """Change to database data"""
+        responce = requests.get(f"{url}trans_curr/{selected_wallet_id}")
+        purchase_details_from_db_core = prep_data_from_db(responce.json())
+        purchase_details_from_db = [val[:6] for val in purchase_details_from_db_core]
+        if len(purchase_details_from_db_core) == 0:
+            raise ZeroDataFromDB
+    except ConnectionError:
+        msgbox.showinfo("Informacja", "Niestety nie udało się połączyć z serwerem.")
+    except ZeroDataFromDB:
+        msgbox.showinfo("Informacja", "Niestety brak danych dla tego portfela.")
     else:
         button_obj.configure(state="disable")
         purchase_details_window = TopFrame()
@@ -159,7 +234,7 @@ def purchers_area_ingredients(choice_wallet: str, button_obj: ttk.Button) -> Non
             lambda: button_change_state(button_obj, purchase_details_window.frame),
         )
         purchase_details_area = AreaFrame(onFrame=purchase_details_window.frame)
-        status_transaction = ("Kupno", "Sprzedaz")
+        status_transaction = ("BUY", "SALE")
         purchase_details_area.text_display(
             text="Data", row=0, column=0, columnspan=2
         )  # obj_0
@@ -174,7 +249,7 @@ def purchers_area_ingredients(choice_wallet: str, button_obj: ttk.Button) -> Non
         column_change = 0
         for key in filter_type:
             purchase_details_area.combobox_display(
-                values=update_filtr(filter_type[key], purchase_details_data.file_data),
+                values=update_filtr(filter_type[key], purchase_details_from_db),
                 width=10,
                 row=1,
                 column=column_change,  # 0,2,4
@@ -186,7 +261,7 @@ def purchers_area_ingredients(choice_wallet: str, button_obj: ttk.Button) -> Non
                 "<<ComboboxSelected>>",
                 lambda _: sort_treeView(
                     purchase_details_area.dict_combo,
-                    purchase_details_data.file_list,
+                    purchase_details_from_db[:6],
                     purchase_details_area,
                 ),
             )
@@ -209,11 +284,12 @@ def purchers_area_ingredients(choice_wallet: str, button_obj: ttk.Button) -> Non
         )  # obj_3
         # add data from file , create new instant and download data
 
-        # 6 entry
+        # 5 entry
         for i in range(6):  # obj_4-8
             if i != 2:
                 purchase_details_area.entry_display(row=3, column=i)
             else:
+                """on index 2 is combobox"""
                 purchase_details_area.combobox_display(
                     values=status_transaction,
                     row=3,
@@ -257,7 +333,14 @@ def purchers_area_ingredients(choice_wallet: str, button_obj: ttk.Button) -> Non
             text=button_names[4], row=4, column=4, command=button_delete
         )
         purchase_details_area.button_display(
-            text=button_names[5], row=4, column=5, command=button_update_wallet
+            text=button_names[5],
+            row=4,
+            column=5,
+            command=lambda: button_update_wallet(
+                treeview_values=purchase_details_area.objList[3],
+                db_data=purchase_details_from_db_core,
+                url=url,
+            ),
         )
 
         # treeview with unit price
@@ -271,12 +354,12 @@ def purchers_area_ingredients(choice_wallet: str, button_obj: ttk.Button) -> Non
         )
 
         purchase_details_area.add_data_in_treeview(
-            purchase_details_area.objList[3], purchase_details_data.file_list, "txt"
+            purchase_details_area.objList[3], purchase_details_from_db, "txt", 10
         )
 
         purchase_details_area.add_data_in_treeview(
             purchase_details_area.objList[15],
-            cal_unit_prices(purchase_details_data.file_data),
+            cal_unit_prices(purchase_details_from_db),
         )
 
     # unit price column and data
