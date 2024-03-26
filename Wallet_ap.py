@@ -11,7 +11,6 @@ from style_config import style_conf
 import Create_new_account
 
 # from Invested_plan import invested_area_ingredients
-import time as t
 
 
 def invested_area_ingredients(
@@ -147,15 +146,18 @@ def price_wallet(wallet: list, variable_json_File: dict) -> list:
         read_file = json.load(file)
         if read_file["Stable_price"]["Dolar"][1] != last_time:
             response = requests.get(read_file["url"], headers=read_file["headers"])
-            if response.status_code == 200:
-                result = json.loads(response.text)
-                read_file["Stable_price"]["Dolar"] = (
-                    result["quotes"]["USDPLN"],
-                    last_time,
-                )
-                file.seek(0, 0)
-                file.truncate()
-                json.dump(read_file, file, ensure_ascii=False, indent=4)
+            if response.status_code != 200:
+                """If api key works its should work fine"""
+                raise ConnectionError
+            result = response.json()
+            read_file["Stable_price"]["Dolar"] = (
+                result["quotes"]["USDPLN"],
+                last_time,
+            )
+            file.seek(0, 0)
+            file.truncate()
+            json.dump(read_file, file, ensure_ascii=False, indent=4)
+
     """Check if data charts is anavable"""
     pre_url = '","'.join(
         [
@@ -171,6 +173,7 @@ def price_wallet(wallet: list, variable_json_File: dict) -> list:
         )
     ).json()
     prices = {i["symbol"]: float(i["price"]).__round__(4) for i in url}
+
     invest_val = 0
     val_of_wallet_pln = 0
     Profit_zl = 0
@@ -189,6 +192,8 @@ def price_wallet(wallet: list, variable_json_File: dict) -> list:
                 download_price = variable_json_File.file_dict["variable_json"][
                     "Cena_ARI10"
                 ]
+            elif wallet[index][0] == "USDT":
+                download_price = 1
             else:
                 download_price = 0
 
@@ -310,8 +315,8 @@ def downlad_wallet_values_from_database(
     response: list[dict] = requests.get(
         url_credentials + f"wallet_detail/{wallet_id}"
     ).json()
-    for i in range(len(response)):
-        response[i] = list(response[i].values())
+    """1 column is id in db"""
+    response = [list(val.values())[1:] for val in response]
 
     variable_json_File.file_dict["wallet_data"] = response
 
@@ -337,12 +342,13 @@ def refresh_wallet(
         middle_area.objList[0], variable_json_File.file_dict["wallet_data"], "txt"
     )
     th.Thread(
-        target=middle_area.add_data_in_treeview(
+        target=middle_area.add_data_in_treeview,
+        args=(
             middle_area.objList[1],
             price_wallet(
                 variable_json_File.file_dict["wallet_data"], variable_json_File
             ),
-        )
+        ),
     ).start()
 
     # calculate and refresh area
@@ -508,7 +514,7 @@ def logins_area_ingredients(
 
     # only for tests
     area.objList[2].insert(0, "Admin")
-    area.objList[4].insert(0, "321")  # correct 321
+    area.objList[4].insert(0, "321")
     # check_logins(logins_area.objList[2].get(), logins_area.objList[4].get())
     root.withdraw()
     # hide window
@@ -566,16 +572,6 @@ def middle_area_ingrednients(
         middle_area.objList[1],
         price_wallet(variable_json_File.file_dict["wallet_data"], variable_json_File),
     )
-    t.sleep(2)
-    # th_add_treeview = th.Thread(
-    #     target=middle_area.add_data_in_treeview(
-    #         middle_area.objList[1],
-    #         price_wallet(
-    #             variable_json_File.file_dict["wallet_data"], variable_json_File
-    #         ),
-    #     )
-    # )
-    # th_add_treeview.start()
 
     def selected_choice(val: int):
         if val == 0:
@@ -637,7 +633,6 @@ def buttons_area_ingredients(
         pady=15,
         width=18,
         command=lambda: purchers_area_ingredients(
-            choice_wallet=top_area.dict_combo["wallet_list"].get(),
             button_obj=buttons_area.objList[0],
             url=variable_json_File.file_dict["variable_json"]["URL_Credentials"],
             selected_wallet_id=session_user["selected_wallet_id"],
@@ -782,13 +777,12 @@ def create_main_area(frame: ttk.Frame) -> dict[AreaFrame]:
 
 def main(root: ttk.Window) -> None:
     # window for login
+    # style_conf(root)
 
-    style_conf(root)
     logins_window = TopFrame()
     logins_area = AreaFrame(onFrame=logins_window.frame)
     core = ttk.Frame(root)
     core.grid()
-
     area_dict = create_main_area(core)
     variable_json_File = ReadData()
     variable_json_File.read_from_file("App_file\zmienne.json", "json", "variable_json")
@@ -801,7 +795,7 @@ def main(root: ttk.Window) -> None:
         logins_area, logins_window, root, variable_json_File, session_user
     )
     try:
-        top_area_ingredients(area_dict, variable_json_File, session_user)
+        top_area_ingredients(area_dict["top_area"], variable_json_File, session_user)
         middle_area_ingrednients(
             area_dict["middle_area"],
             area_dict["top_area"],
@@ -852,27 +846,12 @@ if __name__ == "__main__":
     dollar_price = ReadData()
     dollar_price.read_from_file("App_file\zmienneApiDolar.json", "json", "dollar_price")
     session_user = {"button_pred_state": 0}
-
     logins_area_ingredients(
         logins_area, logins_window, root, variable_json_File, session_user
     )
     try:
+
         top_area_ingredients(area_dict["top_area"], variable_json_File, session_user)
-        # th_top = th.Thread(
-        #     target=top_area_ingredients,
-        #     daemon=False,
-        #     args=(area_dict, variable_json_File, session_user),
-        # ).run()
-        # th_middle = th.Thread(
-        #     target=middle_area_ingrednients,
-        #     daemon=False,
-        #     args=(
-        #         area_dict["middle_area"],
-        #         area_dict["top_area"],
-        #         session_user,
-        #         variable_json_File,
-        #     ),
-        # ).run()
         middle_area_ingrednients(
             area_dict["middle_area"],
             area_dict["top_area"],
@@ -894,11 +873,20 @@ if __name__ == "__main__":
             session_user,
         )
 
-    except KeyError as e:
+    except Exception as e:
+        print(f"ERROR: {e}")
         pass
-    else:
+    finally:
+        """Prep for status:"""
+        # print(
+        #     ",".join(
+        #         [
+        #             f"{val[0]} {val[3]}"
+        #             for val in variable_json_File.file_dict["wallet_data"]
+        #         ]
+        #     )
+        # )
 
-        """TEMP"""
         # Wywala mi szerkość treeview headers na laptopie
         th.Thread(
             target=chart_area_ingredients,
@@ -907,5 +895,3 @@ if __name__ == "__main__":
         ).run()
         root.resizable(False, False)
         root.mainloop()
-
-    # main(root)

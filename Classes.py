@@ -36,6 +36,7 @@ class AreaFrame:
         pady=5,
         **kwargs,
     ):
+        """Label"""
         label = ttk.Label(self.frame, text=text, style=style)
         label.grid(
             row=row,
@@ -57,7 +58,6 @@ class AreaFrame:
         columnspan: int = None,
         width: int = 90,
     ):
-        # treeview = ttk.Treeview(self.frame, bootstyle="primary")
         treeview = ttk.Treeview(self.frame, style="primary")
         treeview.heading("#0", text="\n")
         treeview["columns"] = columns
@@ -198,6 +198,7 @@ class AreaFrame:
         text: str = "",
         insert: bool = False,
     ):
+        """Entry"""
         entry = ttk.Entry(self.frame, style="primary", width=width, justify=justify)
         # if result_value < 0:
         #     entry.configure(style="negative.primary.TEntry")
