@@ -173,33 +173,6 @@ def update_filtr(filtr_name: str, data_list: list):
 
 
 def cal_unit_prices(history_trans_data: list, new_wallet_count: bool = False) -> list:
-    result = [[]]
-    for val in history_trans_data:
-        if val[1] not in result[0]:
-            result[0].append(val[1])
-            result.append([val[1], 0, 0, 0])  # nazwa, cena jed. zł, cena jed. $, ilosc
-        if val[2] == "BUY":
-            result[result[0].index(val[1]) + 1][1] += val[3]
-            result[result[0].index(val[1]) + 1][2] += val[4]
-            result[result[0].index(val[1]) + 1][3] += val[5]
-        if val[2] == "SALE":
-            result[result[0].index(val[1]) + 1][1] -= val[3]
-            result[result[0].index(val[1]) + 1][2] -= val[4]
-            result[result[0].index(val[1]) + 1][3] -= val[5]
-    result.pop(0)
-    print(result)
-    for i in result:
-        i[3] = i[3].__round__(4)
-        if i[3] != 0:
-            i[1] = round(i[1] / i[3], 4)
-            i[2] = round(i[2] / i[3], 4)
-            i[3] = round(i[3], 4)
-        else:
-            result.pop(result.index(i))
-    return result
-
-
-def cal_unit_prices2(history_trans_data: list, new_wallet_count: bool = False) -> list:
     status = ("BUY", "SALE")
     result = []
     unique_names = []
@@ -231,7 +204,7 @@ def cal_unit_prices2(history_trans_data: list, new_wallet_count: bool = False) -
     else:
         for i in result:
             if round(i[3], 4) == 0 and i[1] != 0:
-                i[3]=0
+                i[3] = 0
             if i[1] == 0 and i[2] == 0:
                 result.pop(result.index(i))
         return result
@@ -312,6 +285,7 @@ def button_update_wallet(
     frame: ttk.Frame,
     selected_wallet_id: int,
     treeview: ttk.Treeview,
+    header: str,
 ):
 
     def add_db(val: list, directory: str):
@@ -366,9 +340,7 @@ def button_update_wallet(
                 "Price_USD": val[2],
                 "Quantity": val[3],
             }
-            responce = requests.patch(
-                f"{url}{directory}/{id}", json=prep_data
-            )  # headers=headers
+            responce = requests.patch(f"{url}{directory}/{id}", json=prep_data)
             print(responce.status_code)
 
     def delete_db(id: int):
@@ -388,9 +360,7 @@ def button_update_wallet(
 
     if msgbox.askokcancel("Warning", "Czy na pewno chcesz przesłać zmiany do bazy?"):
         frame.focus()
-        headers = {
-            "Authorization": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcxMDc2NzYwMCwianRpIjoiYWNmOTc3MzEtOGZiZS00MzBmLTlkNGEtMGFiZjk4ZGM1ZGU0IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3MTA3Njc2MDAsImV4cCI6MTc0MTg3MTYwMH0.LuSptTM5eeVZpf85FyW68Odm3WboWaMonucft5LB3iQ"
-        }
+        headers = {"Authorization": header}
         if len(changed_data) > 0:
             status = False
             for val in changed_data:
@@ -413,7 +383,7 @@ def button_update_wallet(
                     update_db(val["new"], id=id[0]["Id"], directory="trans_curr")
         changed_data = []
         """Recount wallet"""
-        new_wallet_data = cal_unit_prices2(
+        new_wallet_data = cal_unit_prices(
             history_trans_data=treeview_values(treeview_obj=treeview),
             new_wallet_count=True,
         )
@@ -508,7 +478,7 @@ def button_selected(
 
 
 def purchers_area_ingredients(
-    button_obj: ttk.Button, url: str, selected_wallet_id: int
+    button_obj: ttk.Button, url: str, selected_wallet_id: int, header: str
 ) -> None:
 
     try:
@@ -581,6 +551,7 @@ def purchers_area_ingredients(
                 frame=purchase_details_window.frame,
                 selected_wallet_id=selected_wallet_id,
                 treeview=purchase_details_area.objList[3],
+                header=header,
             )
         )
 
@@ -591,5 +562,5 @@ def purchers_area_ingredients(
 
         purchase_details_area.add_data_in_treeview(
             purchase_details_area.objList[15],
-            cal_unit_prices2(purchase_details_from_db),
+            cal_unit_prices(purchase_details_from_db),
         )
