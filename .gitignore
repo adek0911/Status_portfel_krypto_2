@@ -1,8 +1,9 @@
 __pycache__
 .vscode
 .venv
-Dane
 App_file
 test.py
 App_file/zmienneApiDolar.json
 App_file/zmienne.json
+Short_cut.txt
+Wallet_gen.py

@@ -1,5 +1,4 @@
 # Status_portfel_krypto_2
-App code is in file 'appOnClass.py'
+Main code is in file '_main.py'
 Every used class is in 'Classes.py'
-Data for local use is in folder 'Dane'
 Photo of app in folder Photo
