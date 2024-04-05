@@ -386,10 +386,8 @@ def logins_area_ingredients(
     )
     window.frame.protocol("WM_DELETE_WINDOW", lambda: warning_mess(root))
     window.frame.bind("<Return>", lambda x: area.objList[6].invoke())
-
-    # only for tests
-    area.objList[2].insert(0, "Admin")
-    area.objList[4].insert(0, "321")
+    #For test
+    #Login: Test Password: Tests
     # check_logins(logins_area.objList[2].get(), logins_area.objList[4].get())
     root.withdraw()
     # hide window
